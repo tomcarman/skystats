@@ -9,7 +9,9 @@ import (
 
 func Fetch() []byte {
 
-	response, err := http.Get(os.Getenv("ADSB_HOST_AIRCRAFT_JSON"))
+	url := "http://" + os.Getenv("ADSB_HOST") + ":" + os.Getenv("ADSB_PORT") + "/data/aircraft.json"
+
+	response, err := http.Get(url)
 
 	if err != nil {
 		log.Fatal(err.Error())

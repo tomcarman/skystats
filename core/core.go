@@ -22,7 +22,8 @@ func main() {
 	}
 
 	go func() {
-		log.Println(http.ListenAndServe(getPprofHost(), nil))
+		pprofUrl := getPprofHost() + ":" + getPprofPort()
+		log.Println(http.ListenAndServe(pprofUrl, nil))
 	}()
 
 	cntxt := &daemon.Context{
@@ -46,7 +47,7 @@ func main() {
 	log.Print("- - - - - - - - - - - - - - -")
 	log.Print("daemon started")
 
-	url := "postgres://" + getUser() + ":" + getPassword() + "@" + getHost() + "/" + getDbName()
+	url := "postgres://" + getUser() + ":" + getPassword() + "@" + getHost() + ":" + getPort() + "/" + getDbName()
 
 	pg, err := NewPG(context.Background(), url)
 	if err != nil {
@@ -88,7 +89,14 @@ func getPassword() string {
 func getHost() string {
 	return os.Getenv("DB_HOST")
 }
+func getPort() string {
+	return os.Getenv("DB_PORT")
+}
 
 func getPprofHost() string {
 	return os.Getenv("PPROF_HOST")
+}
+
+func getPprofPort() string {
+	return os.Getenv("PPROF_PORT")
 }

@@ -1,0 +1,4 @@
+.env
+skystats-daemon
+skystats.log
+skystats.pid
