@@ -1,0 +1,94 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+	"time"
+
+	"github.com/joho/godotenv"
+
+	"github.com/sevlyar/go-daemon"
+)
+
+func main() {
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	go func() {
+		log.Println(http.ListenAndServe(getPprofHost(), nil))
+	}()
+
+	cntxt := &daemon.Context{
+		PidFileName: "skystats.pid",
+		PidFilePerm: 0644,
+		LogFileName: "skystats.log",
+		LogFilePerm: 0640,
+		WorkDir:     "./",
+		Umask:       027,
+	}
+
+	d, err := cntxt.Reborn()
+	if err != nil {
+		log.Fatal("Unable to run: ", err)
+	}
+	if d != nil {
+		return
+	}
+	defer cntxt.Release()
+
+	log.Print("- - - - - - - - - - - - - - -")
+	log.Print("daemon started")
+
+	url := "postgres://" + getUser() + ":" + getPassword() + "@" + getHost() + "/" + getDbName()
+
+	pg, err := NewPG(context.Background(), url)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
+	updateStatisticsTicker := time.NewTicker(10 * time.Second)
+
+	defer func() {
+		updateAircraftDataTicker.Stop()
+		updateStatisticsTicker.Stop()
+		pg.Close()
+	}()
+
+	for {
+		select {
+		case <-updateAircraftDataTicker.C:
+			updateAircraftDatabase(pg)
+		case <-updateStatisticsTicker.C:
+			updateMeasurementStatistics(pg)
+		}
+	}
+}
+
+func getDbName() string {
+	return os.Getenv("DB_NAME")
+}
+
+func getUser() string {
+	return os.Getenv("DB_USER")
+}
+
+func getPassword() string {
+	return os.Getenv("DB_PASSWORD")
+}
+
+func getHost() string {
+	return os.Getenv("DB_HOST")
+}
+
+func getPprofHost() string {
+	return os.Getenv("PPROF_HOST")
+}
