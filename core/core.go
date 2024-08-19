@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-
 	"github.com/sevlyar/go-daemon"
 )
 
@@ -56,9 +55,10 @@ func main() {
 	}
 
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
-	updateStatisticsTicker := time.NewTicker(10 * time.Second)
+	updateStatisticsTicker := time.NewTicker(2 * time.Second)
 
 	defer func() {
+		fmt.Println("Closing database connection")
 		updateAircraftDataTicker.Stop()
 		updateStatisticsTicker.Stop()
 		pg.Close()

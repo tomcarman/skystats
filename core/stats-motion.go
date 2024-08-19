@@ -10,39 +10,42 @@ import (
 
 func updateMeasurementStatistics(pg *postgres) {
 
-	updateAltitudeStatistics(pg, "lowest_aircraft", "barometric_altitude", "DESC", 99999, "lowest_aircraft_processed")
-	updateAltitudeStatistics(pg, "highest_aircraft", "barometric_altitude", "ASC", 0, "highest_aircraft_processed")
+	updateLowestAircraft(pg)
+	updateHighestAircraft(pg)
+	updateSlowestAircraft(pg)
 
-	updateSpeedStatistics(pg, "slowest_aircraft", "ground_speed", "DESC", 99999, "slowest_aircraft_processed")
-	updateSpeedStatistics(pg, "fastest_aircraft", "ground_speed", "ASC", 0, "fastest_aircraft_processed")
+	updateFastestAircraft(pg)
+
+	// updateAltitudeStatistics(pg, "lowest_aircraft", "barometric_altitude", "DESC", 99999, "lowest_aircraft_processed")
+	// updateAltitudeStatistics(pg, "highest_aircraft", "barometric_altitude", "ASC", 0, "highest_aircraft_processed")
+	// updateSpeedStatistics(pg, "slowest_aircraft", "ground_speed", "DESC", 99999, "slowest_aircraft_processed")
+	// updateSpeedStatistics(pg, "fastest_aircraft", "ground_speed", "ASC", 0, "fastest_aircraft_processed")
 
 }
 
-func updateSpeedStatistics(pg *postgres, tableName string, metricName string, sortOrder string, defaultValue float64, processedColumnName string) {
+func updateLowestAircraft(pg *postgres) {
 
-	aircrafts := getAircraftsForMeasurementStatistics(pg, processedColumnName)
+	processedMetricName := "lowest_aircraft_processed"
+	tableName := "lowest_aircraft"
+	metricName := "barometric_altitude"
 
-	// Get the fastest or slowest based on ground speed
-	fastestOrSlowest, ok := GetLowestOrHighest(pg, tableName, "ground_speed", sortOrder).(float64)
-	if !ok {
-		fastestOrSlowest = float64(defaultValue)
+	aircrafts := getAircraftsForMeasurementStatistics(pg, processedMetricName)
+
+	fmt.Println("Aircrafts that have not been processed: ", len(aircrafts))
+	if len(aircrafts) == 0 {
+		return
 	}
 
-	// Sort aircrafts based on the sortOrder
-	if sortOrder == "ASC" {
-		sort.Slice(aircrafts, func(i, j int) bool {
-			return aircrafts[i].Gs > aircrafts[j].Gs
-		})
-	} else {
-		sort.Slice(aircrafts, func(i, j int) bool {
-			return aircrafts[i].Gs < aircrafts[j].Gs
-		})
-	}
+	lowestAircraftCeiling := getLowestAircraftCeiling(pg)
+
+	sort.Slice(aircrafts, func(i, j int) bool {
+		return aircrafts[i].AltBaro < aircrafts[j].AltBaro
+	})
 
 	var aircraftsToInsert []Aircraft
 
 	for _, aircraft := range aircrafts {
-		if (sortOrder == "ASC" && aircraft.Gs > fastestOrSlowest) || (sortOrder == "DESC" && aircraft.Gs < fastestOrSlowest) {
+		if aircraft.AltBaro < lowestAircraftCeiling {
 			aircraftsToInsert = append(aircraftsToInsert, aircraft)
 		} else {
 			break
@@ -52,23 +55,113 @@ func updateSpeedStatistics(pg *postgres, tableName string, metricName string, so
 	batch := &pgx.Batch{}
 
 	for _, aircraft := range aircraftsToInsert {
-		insertStatement := fmt.Sprintf(`
-								INSERT INTO %s (
-									hex, flight, registration, type, first_seen, last_seen,
-									ground_speed, indicated_air_speed, true_air_speed)
-								VALUES (
-									$1, $2, $3, $4, $5, $6, $7, $8, $9)
-								ON CONFLICT (hex, first_seen)
-								DO UPDATE SET
-									ground_speed = EXCLUDED.ground_speed,
-									indicated_air_speed = EXCLUDED.indicated_air_speed,
-									true_air_speed = EXCLUDED.true_air_speed,
-									last_seen = EXCLUDED.last_seen`, tableName)
+		insertStatement := `
+			INSERT INTO lowest_aircraft (
+				hex,
+				flight,
+				registration,
+				type,
+				first_seen,
+				last_seen,
+				barometric_altitude,
+				geometric_altitude)
+			VALUES (
+				$1, $2, $3, $4, $5, $6, $7, $8)
+			ON CONFLICT (hex, first_seen)
+			DO UPDATE SET
+				barometric_altitude = EXCLUDED.barometric_altitude,
+				geometric_altitude = EXCLUDED.geometric_altitude,
+				last_seen = EXCLUDED.last_seen`
 
 		batch.Queue(
 			insertStatement,
-			aircraft.Hex, aircraft.Flight, aircraft.R, aircraft.T, aircraft.FirstSeen, aircraft.LastSeen,
-			aircraft.Gs, aircraft.Tas, aircraft.Ias)
+			aircraft.Hex,
+			aircraft.Flight,
+			aircraft.R,
+			aircraft.T,
+			aircraft.FirstSeen,
+			aircraft.LastSeen,
+			aircraft.AltBaro,
+			aircraft.AltGeom)
+	}
+
+	br := pg.db.SendBatch(context.Background(), batch)
+	defer br.Close()
+
+	for i := 0; i < len(aircraftsToInsert); i++ {
+		_, err := br.Exec()
+		if err != nil {
+			fmt.Println("Unable to insert data: ", err)
+		}
+	}
+	DeleteExcessRows(pg, tableName, metricName, "DESC", 50)
+
+	if len(aircrafts) > 0 {
+		MarkProcessed(pg, processedMetricName, aircrafts)
+	}
+
+}
+
+func updateHighestAircraft(pg *postgres) {
+
+	processedMetricName := "highest_aircraft_processed"
+	tableName := "highest_aircraft"
+	metricName := "barometric_altitude"
+
+	aircrafts := getAircraftsForMeasurementStatistics(pg, processedMetricName)
+
+	fmt.Println("Aircrafts that have not been processed: ", len(aircrafts))
+	if len(aircrafts) == 0 {
+		return
+	}
+
+	highestAircraftFloor := getHighestAircraftFloor(pg)
+
+	sort.Slice(aircrafts, func(i, j int) bool {
+		return aircrafts[i].AltBaro > aircrafts[j].AltBaro
+	})
+
+	var aircraftsToInsert []Aircraft
+
+	for _, aircraft := range aircrafts {
+		if aircraft.AltBaro > highestAircraftFloor {
+			aircraftsToInsert = append(aircraftsToInsert, aircraft)
+		} else {
+			break
+		}
+	}
+
+	batch := &pgx.Batch{}
+
+	for _, aircraft := range aircraftsToInsert {
+		insertStatement := `
+			INSERT INTO highest_aircraft (
+				hex,
+				flight,
+				registration,
+				type,
+				first_seen,
+				last_seen,
+				barometric_altitude,
+				geometric_altitude)
+			VALUES (
+				$1, $2, $3, $4, $5, $6, $7, $8)
+			ON CONFLICT (hex, first_seen)
+			DO UPDATE SET
+				barometric_altitude = EXCLUDED.barometric_altitude,
+				geometric_altitude = EXCLUDED.geometric_altitude,
+				last_seen = EXCLUDED.last_seen`
+
+		batch.Queue(
+			insertStatement,
+			aircraft.Hex,
+			aircraft.Flight,
+			aircraft.R,
+			aircraft.T,
+			aircraft.FirstSeen,
+			aircraft.LastSeen,
+			aircraft.AltBaro,
+			aircraft.AltGeom)
 	}
 
 	br := pg.db.SendBatch(context.Background(), batch)
@@ -81,38 +174,36 @@ func updateSpeedStatistics(pg *postgres, tableName string, metricName string, so
 		}
 	}
 
-	DeleteExcessRows(pg, tableName, metricName, sortOrder, 50)
+	DeleteExcessRows(pg, tableName, metricName, "ASC", 50)
 
 	if len(aircrafts) > 0 {
-		MarkProcessed(pg, processedColumnName, aircrafts)
+		MarkProcessed(pg, processedMetricName, aircrafts)
 	}
 }
 
-func updateAltitudeStatistics(pg *postgres, tableName string, metricName string, sortOrder string, defaultValue int, processedColumnName string) {
+func updateSlowestAircraft(pg *postgres) {
 
-	aircrafts := getAircraftsForMeasurementStatistics(pg, processedColumnName)
+	processedMetricName := "slowest_aircraft_processed"
+	tableName := "slowest_aircraft"
+	metricName := "ground_speed"
 
-	// Get the highest or lowest barometric altitude
-	highestOrLowestAltBaro, ok := GetLowestOrHighest(pg, tableName, "barometric_altitude", sortOrder).(int32)
-	if !ok {
-		highestOrLowestAltBaro = int32(defaultValue)
+	aircrafts := getAircraftsForMeasurementStatistics(pg, processedMetricName)
+
+	fmt.Println("Aircrafts that have not been processed: ", len(aircrafts))
+	if len(aircrafts) == 0 {
+		return
 	}
 
-	// Sort aircrafts based on the sortOrder
-	if sortOrder == "ASC" {
-		sort.Slice(aircrafts, func(i, j int) bool {
-			return aircrafts[i].AltBaro > aircrafts[j].AltBaro
-		})
-	} else {
-		sort.Slice(aircrafts, func(i, j int) bool {
-			return aircrafts[i].AltBaro < aircrafts[j].AltBaro
-		})
-	}
+	slowestAircraftCeiling := getSlowestAircraftCeiling(pg)
+
+	sort.Slice(aircrafts, func(i, j int) bool {
+		return aircrafts[i].Gs < aircrafts[j].Gs
+	})
 
 	var aircraftsToInsert []Aircraft
 
 	for _, aircraft := range aircrafts {
-		if (sortOrder == "ASC" && aircraft.AltBaro > int(highestOrLowestAltBaro)) || (sortOrder == "DESC" && aircraft.AltBaro < int(highestOrLowestAltBaro)) {
+		if aircraft.Gs < slowestAircraftCeiling {
 			aircraftsToInsert = append(aircraftsToInsert, aircraft)
 		} else {
 			break
@@ -122,28 +213,37 @@ func updateAltitudeStatistics(pg *postgres, tableName string, metricName string,
 	batch := &pgx.Batch{}
 
 	for _, aircraft := range aircraftsToInsert {
-		insertStatement := fmt.Sprintf(`
-								INSERT INTO %s (
-									hex,
-									flight,
-									registration,
-									type,
-									first_seen,
-									last_seen,
-									barometric_altitude,
-									geometric_altitude)
-								VALUES (
-									$1, $2, $3, $4, $5, $6, $7, $8)
-								ON CONFLICT (hex, first_seen)
-								DO UPDATE SET
-									barometric_altitude = EXCLUDED.barometric_altitude,
-									geometric_altitude = EXCLUDED.geometric_altitude,
-									last_seen = EXCLUDED.last_seen`, tableName)
+		insertStatement := `
+			INSERT INTO slowest_aircraft (
+				hex,
+				flight,
+				registration,
+				type,
+				first_seen,
+				last_seen,
+				ground_speed,
+				indicated_air_speed,
+				true_air_speed)
+			VALUES (
+				$1, $2, $3, $4, $5, $6, $7, $8, $9)
+			ON CONFLICT (hex, first_seen)
+			DO UPDATE SET
+				ground_speed = EXCLUDED.ground_speed,
+				indicated_air_speed = EXCLUDED.indicated_air_speed,
+				true_air_speed = EXCLUDED.true_air_speed,
+				last_seen = EXCLUDED.last_seen`
 
 		batch.Queue(
 			insertStatement,
-			aircraft.Hex, aircraft.Flight, aircraft.R, aircraft.T, aircraft.FirstSeen, aircraft.LastSeen,
-			aircraft.AltBaro, aircraft.AltGeom)
+			aircraft.Hex,
+			aircraft.Flight,
+			aircraft.R,
+			aircraft.T,
+			aircraft.FirstSeen,
+			aircraft.LastSeen,
+			aircraft.Gs,
+			aircraft.Tas,
+			aircraft.Ias)
 	}
 
 	br := pg.db.SendBatch(context.Background(), batch)
@@ -156,10 +256,93 @@ func updateAltitudeStatistics(pg *postgres, tableName string, metricName string,
 		}
 	}
 
-	DeleteExcessRows(pg, tableName, metricName, sortOrder, 50)
+	DeleteExcessRows(pg, tableName, metricName, "DESC", 50)
 
 	if len(aircrafts) > 0 {
-		MarkProcessed(pg, processedColumnName, aircrafts)
+		fmt.Println("Marking processed for slowest_aircraft")
+		MarkProcessed(pg, processedMetricName, aircrafts)
+	}
+}
+
+func updateFastestAircraft(pg *postgres) {
+
+	processedMetricName := "fastest_aircraft_processed"
+	// tableName := "fastest_aircraft"
+	metricName := "ground_speed"
+
+	aircrafts := getAircraftsForMeasurementStatistics(pg, processedMetricName)
+
+	fmt.Println("Aircrafts that have not been processed: ", len(aircrafts))
+	if len(aircrafts) == 0 {
+		return
+	}
+
+	fastestAircraftFloor := getFastestAircraftFloor(pg)
+
+	sort.Slice(aircrafts, func(i, j int) bool {
+		return aircrafts[i].Gs > aircrafts[j].Gs
+	})
+
+	var aircraftsToInsert []Aircraft
+
+	for _, aircraft := range aircrafts {
+		if aircraft.Gs > fastestAircraftFloor {
+			aircraftsToInsert = append(aircraftsToInsert, aircraft)
+		} else {
+			break
+		}
+	}
+
+	batch := &pgx.Batch{}
+
+	for _, aircraft := range aircraftsToInsert {
+		insertStatement := `
+			INSERT INTO fastest_aircraft (
+				hex,
+				flight,
+				registration,
+				type,
+				first_seen,
+				last_seen,
+				ground_speed,
+				indicated_air_speed,
+				true_air_speed)
+			VALUES (
+				$1, $2, $3, $4, $5, $6, $7, $8, $9)
+			ON CONFLICT (hex, first_seen)
+			DO UPDATE SET
+				ground_speed = EXCLUDED.ground_speed,
+				indicated_air_speed = EXCLUDED.indicated_air_speed,
+				true_air_speed = EXCLUDED.true_air_speed,
+				last_seen = EXCLUDED.last_seen`
+
+		batch.Queue(
+			insertStatement,
+			aircraft.Hex,
+			aircraft.Flight,
+			aircraft.R,
+			aircraft.T,
+			aircraft.FirstSeen,
+			aircraft.LastSeen,
+			aircraft.Gs,
+			aircraft.Tas,
+			aircraft.Ias)
+	}
+
+	br := pg.db.SendBatch(context.Background(), batch)
+	defer br.Close()
+
+	for i := 0; i < len(aircraftsToInsert); i++ {
+		_, err := br.Exec()
+		if err != nil {
+			fmt.Println("Unable to insert data: ", err)
+		}
+	}
+
+	DeleteExcessRows(pg, "fastest_aircraft", metricName, "ASC", 50)
+
+	if len(aircrafts) > 0 {
+		MarkProcessed(pg, processedMetricName, aircrafts)
 	}
 }
 

@@ -23,26 +23,9 @@ func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
 	}
 }
 
-func GetLowestOrHighest(pg *postgres, tableName string, metricName string, ascOrDesc string) any {
-
-	var returnValue any
-
-	query := `SELECT ` + metricName +
-		` FROM ` + tableName +
-		` ORDER BY ` + metricName + ` ` + ascOrDesc +
-		` LIMIT 1`
-
-	err := pg.db.QueryRow(context.Background(), query).Scan(&returnValue)
-	if err == nil {
-		return returnValue
-	} else {
-		fmt.Println("GetLowestOrHighest() - No rows found in ", tableName, ". Default value will be used")
-		return err
-	}
-
-}
-
 func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrder string, maxRows int) {
+
+	fmt.Println("Entered DeleteExcessRows() for ", tableName)
 
 	queryCount := `SELECT COUNT(*) FROM ` + tableName
 
@@ -53,10 +36,15 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 		return
 	}
 
+	fmt.Println("rowCount: ", rowCount)
+	fmt.Println("maxRows: ", maxRows)
+
 	if rowCount > maxRows {
+
 		excessRows := rowCount - maxRows
 
 		if excessRows <= 0 {
+			fmt.Println("No excess rows in ", tableName)
 			return
 		}
 
