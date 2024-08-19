@@ -8,14 +8,11 @@ import (
 )
 
 func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
-
-	fmt.Println("Entered MarkProcessed() for colName: ", colName)
-	fmt.Println("aircrafts: ", len(aircrafts))
+	// fmt.Println("Entered MarkProcessed() for colName: ", colName)
 
 	batch := &pgx.Batch{}
 
 	for _, aircraft := range aircrafts {
-		fmt.Println("aircraft object: ", aircraft)
 		updateStatement := `UPDATE aircraft_data SET ` + colName + ` = true WHERE id = $1`
 		batch.Queue(updateStatement, aircraft.Id)
 	}
@@ -26,38 +23,29 @@ func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
 	for i := 0; i < len(aircrafts); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("Unable to update data: ", err)
+			fmt.Println("MarkProcessed() - Unable to update data: ", err)
 		}
 	}
-
-	fmt.Println("finished MarkProcessed()", colName)
 }
 
 func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrder string, maxRows int) {
-
-	fmt.Println("Entered DeleteExcessRows() for ", tableName)
-	fmt.Println("metricName: ", metricName)
-	fmt.Println("sortOrder: ", sortOrder)
-	fmt.Println("maxRows: ", maxRows)
+	// fmt.Println("Entered DeleteExcessRows() for tableName: ", tableName, " and metricName: ", metricName)
 
 	queryCount := `SELECT COUNT(*) FROM ` + tableName
 
 	var rowCount int
 	err := pg.db.QueryRow(context.Background(), queryCount).Scan(&rowCount)
 	if err != nil {
-		fmt.Println("Error querying db in DeleteExcessRows(): ", err)
-		// return
+		fmt.Println("DeleteExcessRows() - Error querying db in DeleteExcessRows(): ", err)
+		return
 	}
-
-	fmt.Println("rowCount: ", rowCount)
-	fmt.Println("maxRows: ", maxRows)
 
 	if rowCount > maxRows {
 
 		excessRows := rowCount - maxRows
 
 		if excessRows <= 0 {
-			fmt.Println("No excess rows in ", tableName)
+			fmt.Println("DeleteExcessRows() - No excess rows in ", tableName)
 			return
 		}
 
@@ -71,10 +59,7 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 
 		_, err := pg.db.Exec(context.Background(), deleteStatement, excessRows)
 		if err != nil {
-			fmt.Println("Failed to delete excess rows in ", tableName, ": ", err)
+			fmt.Println("DeleteExcessRows() - Failed to delete excess rows in ", tableName, ": ", err)
 		}
-
-		fmt.Printf("Deleted %d excess rows from %s, so it is back to %d rows", excessRows, tableName, maxRows)
-
 	}
 }

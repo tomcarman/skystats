@@ -39,6 +39,7 @@ func getRuler() *cheapruler.CheapRuler {
 	ruler, err := cheapruler.NewCheapruler(getLon(), "kilometers")
 	if err != nil {
 		fmt.Println("Error creating ruler: ", err)
+		return nil
 	}
 
 	return &ruler
@@ -293,25 +294,16 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 }
 
 func getLat() float64 {
-	lat, err := strconv.ParseFloat(os.Getenv("LATITUDE"), 64)
-	if err != nil {
-		fmt.Println("Error parsing LATITUDE: ", err)
-	}
+	lat, _ := strconv.ParseFloat(os.Getenv("LATITUDE"), 64)
 	return lat
 }
 
 func getLon() float64 {
-	lon, err := strconv.ParseFloat(os.Getenv("LONGITUDE"), 64)
-	if err != nil {
-		fmt.Println("Error parsing LONGITUDE: ", err)
-	}
+	lon, _ := strconv.ParseFloat(os.Getenv("LONGITUDE"), 64)
 	return lon
 }
 
 func getRadius() float64 {
-	radius, err := strconv.ParseFloat(os.Getenv("RADIUS"), 64)
-	if err != nil {
-		fmt.Println("Error parsing RADIUS: ", err)
-	}
+	radius, _ := strconv.ParseFloat(os.Getenv("RADIUS"), 64)
 	return radius
 }
