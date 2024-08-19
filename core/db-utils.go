@@ -8,24 +8,37 @@ import (
 )
 
 func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
+
+	fmt.Println("Entered MarkProcessed() for colName: ", colName)
+	fmt.Println("aircrafts: ", len(aircrafts))
+
 	batch := &pgx.Batch{}
 
 	for _, aircraft := range aircrafts {
+		fmt.Println("aircraft object: ", aircraft)
 		updateStatement := `UPDATE aircraft_data SET ` + colName + ` = true WHERE id = $1`
 		batch.Queue(updateStatement, aircraft.Id)
 	}
 
-	_, err := pg.db.SendBatch(context.Background(), batch).Exec()
+	br := pg.db.SendBatch(context.Background(), batch)
+	defer br.Close()
 
-	if err != nil {
-		fmt.Println("error: markProcessed() for colName: ", colName, ". Error: ", err)
-		return
+	for i := 0; i < len(aircrafts); i++ {
+		_, err := br.Exec()
+		if err != nil {
+			fmt.Println("Unable to update data: ", err)
+		}
 	}
+
+	fmt.Println("finished MarkProcessed()", colName)
 }
 
 func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrder string, maxRows int) {
 
 	fmt.Println("Entered DeleteExcessRows() for ", tableName)
+	fmt.Println("metricName: ", metricName)
+	fmt.Println("sortOrder: ", sortOrder)
+	fmt.Println("maxRows: ", maxRows)
 
 	queryCount := `SELECT COUNT(*) FROM ` + tableName
 
@@ -33,7 +46,7 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 	err := pg.db.QueryRow(context.Background(), queryCount).Scan(&rowCount)
 	if err != nil {
 		fmt.Println("Error querying db in DeleteExcessRows(): ", err)
-		return
+		// return
 	}
 
 	fmt.Println("rowCount: ", rowCount)
@@ -56,7 +69,7 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 								LIMIT $1
 								)`
 
-		_, err = pg.db.Exec(context.Background(), deleteStatement, excessRows)
+		_, err := pg.db.Exec(context.Background(), deleteStatement, excessRows)
 		if err != nil {
 			fmt.Println("Failed to delete excess rows in ", tableName, ": ", err)
 		}

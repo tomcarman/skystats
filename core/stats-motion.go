@@ -10,11 +10,10 @@ import (
 
 func updateMeasurementStatistics(pg *postgres) {
 
-	updateLowestAircraft(pg)
-	updateHighestAircraft(pg)
-	updateSlowestAircraft(pg)
-
 	updateFastestAircraft(pg)
+	// updateLowestAircraft(pg)
+	// updateHighestAircraft(pg)
+	// updateSlowestAircraft(pg)
 
 	// updateAltitudeStatistics(pg, "lowest_aircraft", "barometric_altitude", "DESC", 99999, "lowest_aircraft_processed")
 	// updateAltitudeStatistics(pg, "highest_aircraft", "barometric_altitude", "ASC", 0, "highest_aircraft_processed")

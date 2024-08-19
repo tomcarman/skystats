@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -14,6 +15,7 @@ func Fetch() []byte {
 	response, err := http.Get(url)
 
 	if err != nil {
+		fmt.Println("Error fetching data from ", url)
 		log.Fatal(err.Error())
 	}
 

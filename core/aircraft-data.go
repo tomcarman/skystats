@@ -36,7 +36,11 @@ func updateAircraftDatabase(pg *postgres) {
 }
 
 func getRuler() *cheapruler.CheapRuler {
-	ruler, _ := cheapruler.NewCheapruler(getLon(), "kilometers")
+	ruler, err := cheapruler.NewCheapruler(getLon(), "kilometers")
+	if err != nil {
+		fmt.Println("Error creating ruler: ", err)
+	}
+
 	return &ruler
 }
 
@@ -78,6 +82,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 
 	rows, err := pg.db.Query(context.Background(), query, hexValues)
 	if err != nil {
+		fmt.Println("getAircraftsRecentlySeen() - Error querying db: ", err)
 		return nil
 	}
 	defer rows.Close()
@@ -94,6 +99,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			&existingAircraft.Ias, &existingAircraft.Tas)
 
 		if err != nil {
+			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
 			continue
 		}
 		if nowEpoch-existingAircraft.LastSeenEpoch > 300 {
@@ -287,16 +293,25 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 }
 
 func getLat() float64 {
-	lat, _ := strconv.ParseFloat(os.Getenv("LATITUDE"), 64)
+	lat, err := strconv.ParseFloat(os.Getenv("LATITUDE"), 64)
+	if err != nil {
+		fmt.Println("Error parsing LATITUDE: ", err)
+	}
 	return lat
 }
 
 func getLon() float64 {
-	lon, _ := strconv.ParseFloat(os.Getenv("LONGITUDE"), 64)
+	lon, err := strconv.ParseFloat(os.Getenv("LONGITUDE"), 64)
+	if err != nil {
+		fmt.Println("Error parsing LONGITUDE: ", err)
+	}
 	return lon
 }
 
 func getRadius() float64 {
-	radius, _ := strconv.ParseFloat(os.Getenv("RADIUS"), 64)
+	radius, err := strconv.ParseFloat(os.Getenv("RADIUS"), 64)
+	if err != nil {
+		fmt.Println("Error parsing RADIUS: ", err)
+	}
 	return radius
 }
