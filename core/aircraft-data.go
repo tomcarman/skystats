@@ -14,7 +14,12 @@ import (
 
 func updateAircraftDatabase(pg *postgres) {
 
-	responseData := Fetch()
+	responseData, err := Fetch()
+
+	if err != nil {
+		fmt.Println("Error fetching data: ", err)
+		return
+	}
 
 	var response Response
 	json.Unmarshal(responseData, &response)

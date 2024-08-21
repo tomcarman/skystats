@@ -40,7 +40,6 @@ func main() {
 		log.Fatal("Unable to run: ", err)
 	}
 	if d != nil {
-		fmt.Println("d!= nil")
 		return
 	}
 	defer cntxt.Release()
@@ -69,8 +68,10 @@ func main() {
 	for {
 		select {
 		case <-updateAircraftDataTicker.C:
+			fmt.Println("Update Aircraft: ", time.Now().Format("2006-01-02 15:04:05"))
 			updateAircraftDatabase(pg)
 		case <-updateStatisticsTicker.C:
+			fmt.Println("Update Statistics: ", time.Now().Format("2006-01-02 15:04:05"))
 			updateMeasurementStatistics(pg)
 		}
 	}
