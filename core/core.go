@@ -36,6 +36,7 @@ func main() {
 
 	d, err := cntxt.Reborn()
 	if err != nil {
+		fmt.Println("Unable to run: ", err)
 		log.Fatal("Unable to run: ", err)
 	}
 	if d != nil {
@@ -55,7 +56,7 @@ func main() {
 	}
 
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
-	updateStatisticsTicker := time.NewTicker(2 * time.Second)
+	updateStatisticsTicker := time.NewTicker(4 * time.Second)
 
 	defer func() {
 		fmt.Println("Closing database connection")
@@ -67,8 +68,10 @@ func main() {
 	for {
 		select {
 		case <-updateAircraftDataTicker.C:
+			fmt.Println("Update Aircraft: ", time.Now().Format("2006-01-02 15:04:05"))
 			updateAircraftDatabase(pg)
 		case <-updateStatisticsTicker.C:
+			fmt.Println("Update Statistics: ", time.Now().Format("2006-01-02 15:04:05"))
 			updateMeasurementStatistics(pg)
 		}
 	}

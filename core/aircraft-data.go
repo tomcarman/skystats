@@ -14,7 +14,12 @@ import (
 
 func updateAircraftDatabase(pg *postgres) {
 
-	responseData := Fetch()
+	responseData, err := Fetch()
+
+	if err != nil {
+		fmt.Println("Error fetching data: ", err)
+		return
+	}
 
 	var response Response
 	json.Unmarshal(responseData, &response)
@@ -36,7 +41,12 @@ func updateAircraftDatabase(pg *postgres) {
 }
 
 func getRuler() *cheapruler.CheapRuler {
-	ruler, _ := cheapruler.NewCheapruler(getLon(), "kilometers")
+	ruler, err := cheapruler.NewCheapruler(getLon(), "kilometers")
+	if err != nil {
+		fmt.Println("Error creating ruler: ", err)
+		return nil
+	}
+
 	return &ruler
 }
 
@@ -78,6 +88,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 
 	rows, err := pg.db.Query(context.Background(), query, hexValues)
 	if err != nil {
+		fmt.Println("getAircraftsRecentlySeen() - Error querying db: ", err)
 		return nil
 	}
 	defer rows.Close()
@@ -94,6 +105,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			&existingAircraft.Ias, &existingAircraft.Tas)
 
 		if err != nil {
+			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
 			continue
 		}
 		if nowEpoch-existingAircraft.LastSeenEpoch > 300 {

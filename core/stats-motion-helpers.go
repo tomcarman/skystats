@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 )
 
 func getHighestAircraftFloor(pg *postgres) int {
@@ -17,10 +16,8 @@ func getHighestAircraftFloor(pg *postgres) int {
 
 	err := pg.db.QueryRow(context.Background(), query).Scan(&returnValue)
 	if err == nil {
-		fmt.Println("getHighestAircraftFloor() - Found value: ", returnValue)
 		return returnValue
 	} else {
-		fmt.Println("getHighestAircraftFloor() - Value not found, default value will be used")
 		return defaultValue
 	}
 }
@@ -37,10 +34,8 @@ func getLowestAircraftCeiling(pg *postgres) int {
 
 	err := pg.db.QueryRow(context.Background(), query).Scan(&returnValue)
 	if err == nil {
-		fmt.Println("getLowestAircraftCeiling() - Found value: ", returnValue)
 		return returnValue
 	} else {
-		fmt.Println("getLowestAircraftCeiling() - Value not found, default value will be used")
 		return defaultValue
 	}
 }
@@ -57,10 +52,8 @@ func getFastestAircraftFloor(pg *postgres) float64 {
 
 	err := pg.db.QueryRow(context.Background(), query).Scan(&returnValue)
 	if err == nil {
-		fmt.Println("getFastestAircraftFloor() - Found value: ", returnValue)
 		return returnValue
 	} else {
-		fmt.Println("getFastestAircraftFloor() - Value not found, default value will be used")
 		return defaultValue
 	}
 }
@@ -77,10 +70,8 @@ func getSlowestAircraftCeiling(pg *postgres) float64 {
 
 	err := pg.db.QueryRow(context.Background(), query).Scan(&returnValue)
 	if err == nil {
-		fmt.Println("getSlowestAircraftCeiling() - Found value: ", returnValue)
 		return returnValue
 	} else {
-		fmt.Println("getSlowestAircraftCeiling() - Value not found, default value will be used")
 		return defaultValue
 	}
 }

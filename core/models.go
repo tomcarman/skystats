@@ -46,6 +46,10 @@ type Aircraft struct {
 	Rssi           int     `json:"rssi"`
 	FirstSeen      time.Time
 	// FirstSeenEpoch float64
-	LastSeen      time.Time
-	LastSeenEpoch float64
+	LastSeen         time.Time
+	LastSeenEpoch    float64
+	LowestProcessed  bool
+	HighestProcessed bool
+	FastestProcessed bool
+	SlowestProcessed bool
 }
