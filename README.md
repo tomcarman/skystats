@@ -1,7 +1,16 @@
-# skystats
+<div align="center">
+ <h1>SkyStats</h1>
+</div>
 
-WIP
+<div align="center">
+ <h4>👷 Under construction 👷</h4>
+</div>
 
-Tooling to consume an [ads-b](https://en.wikipedia.org/wiki/Automatic_Dependent_Surveillance%E2%80%93Broadcast) feed from [readsb](https://github.com/wiedehopf/readsb/tree/dev) and generate statistics for a given ads-b radio site.
+<br/>
 
-Built with [Go](https://go.dev/) and [PostgreSQL](https://www.postgresql.org/)
+<div align="center">
+
+✈️ Application to consume a <a href="https://github.com/wiedehopf/readsb/tree/dev">readsb</a> feed from an <a href="https://en.wikipedia.org/wiki/Automatic_Dependent_Surveillance%E2%80%93Broadcast">ads-b</a> readio and generate statistics<br/><br/>
+🧰 Building with <a href="https://go.dev/">Go</a> and <a href="https://www.postgresql.org/">PostgreSQL</a>
+
+</div>
