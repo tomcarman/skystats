@@ -10,7 +10,7 @@
 
 <div align="center">
 
-✈️ Application to consume a <a href="https://github.com/wiedehopf/readsb/tree/dev">readsb</a> feed from an <a href="https://en.wikipedia.org/wiki/Automatic_Dependent_Surveillance%E2%80%93Broadcast">ads-b</a> readio and generate statistics<br/><br/>
+✈️ Application to consume a <a href="https://github.com/wiedehopf/readsb/tree/dev">readsb</a> feed from an <a href="https://en.wikipedia.org/wiki/Automatic_Dependent_Surveillance%E2%80%93Broadcast">ads-b</a> SDR and generate statistics<br/><br/>
 🧰 Building with <a href="https://go.dev/">Go</a> and <a href="https://www.postgresql.org/">PostgreSQL</a>
 
 </div>
