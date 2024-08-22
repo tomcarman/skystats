@@ -134,7 +134,8 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 			aircraftsToInsert = append(aircraftsToInsert, aircraft)
 			insertStatement := `
 				INSERT INTO aircraft_data (
-					hex, flight,
+					hex, 
+					flight,
 					first_seen,
 					first_seen_epoch,
 					last_seen,
@@ -171,11 +172,12 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 					tisb,
 					messages,
 					seen,
-					rssi
+					rssi,
+					db_flags
 				) VALUES (
 					$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 
 					$16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, 
-					$29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39
+					$29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40
 				)`
 
 			batch.Queue(insertStatement,
@@ -217,7 +219,8 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 				aircraft.Tisb,
 				aircraft.Messages,
 				aircraft.Seen,
-				aircraft.Rssi)
+				aircraft.Rssi,
+				aircraft.DbFlags)
 		}
 	}
 
