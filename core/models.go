@@ -54,3 +54,21 @@ type Aircraft struct {
 	FastestProcessed bool
 	SlowestProcessed bool
 }
+
+type AdsbdbRegistration struct {
+	Response struct {
+		Aircraft struct {
+			Type                            string `json:"type"`
+			IcaoType                        string `json:"icao_type"`
+			Manufacturer                    string `json:"manufacturer"`
+			ModeS                           string `json:"mode_s"`
+			Registration                    string `json:"registration"`
+			RegisteredOwnerCountryIsoName   string `json:"registered_owner_country_iso_name"`
+			RegisteredOwnerCountryName      string `json:"registered_owner_country_name"`
+			RegisteredOwnerOperatorFlagCode string `json:"registered_owner_operator_flag_code"`
+			RegisteredOwner                 string `json:"registered_owner"`
+			URLPhoto                        any    `json:"url_photo"`
+			URLPhotoThumbnail               any    `json:"url_photo_thumbnail"`
+		} `json:"aircraft"`
+	} `json:"response"`
+}

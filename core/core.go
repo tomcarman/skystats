@@ -57,11 +57,13 @@ func main() {
 
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
 	updateStatisticsTicker := time.NewTicker(4 * time.Second)
+	updateRoutesTicker := time.NewTicker(30 * time.Second)
 
 	defer func() {
 		fmt.Println("Closing database connection")
 		updateAircraftDataTicker.Stop()
 		updateStatisticsTicker.Stop()
+		updateRoutesTicker.Stop()
 		pg.Close()
 	}()
 
@@ -73,6 +75,9 @@ func main() {
 		case <-updateStatisticsTicker.C:
 			fmt.Println("Update Statistics: ", time.Now().Format("2006-01-02 15:04:05"))
 			updateMeasurementStatistics(pg)
+		case <-updateRoutesTicker.C:
+			fmt.Println("Update Routes: ", time.Now().Format("2006-01-02 15:04:05"))
+			updateRoutes(pg)
 		}
 	}
 }

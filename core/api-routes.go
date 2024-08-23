@@ -2,10 +2,66 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
 )
 
-func getAircraftWithoutRegistrationProcessed(pg *postgres) []Aircraft {
+func updateRoutes(pg *postgres) {
+
+	aircrafts := unprocessed(pg)
+
+	if len(aircrafts) == 0 {
+		fmt.Println("No aircrafts to process")
+		return
+	}
+
+	existing, new := checkRegistrationExists(pg, aircrafts)
+
+	fmt.Println("Existing: ", len(existing))
+	fmt.Println("New: ", len(new))
+
+	registration, err := getRoute(new[0])
+
+	if err != nil {
+		fmt.Println("Error getting route: ", err)
+		return
+	}
+
+	fmt.Println("Registration: ", registration)
+
+	// MarkProcessed(pg, "registration_processed", existing)
+
+}
+
+func getRoute(aircraft Aircraft) (*AdsbdbRegistration, error) {
+
+	url := os.Getenv("ADSB_DB_AIRCRAFT_ENDPOINT")
+	url += aircraft.Hex
+
+	response, err := http.Get(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := io.ReadAll(response.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var registrationResponse AdsbdbRegistration
+	json.Unmarshal(data, &registrationResponse)
+
+	return &registrationResponse, nil
+
+}
+
+func unprocessed(pg *postgres) []Aircraft {
 
 	query := `
 		SELECT id, hex
@@ -14,7 +70,7 @@ func getAircraftWithoutRegistrationProcessed(pg *postgres) []Aircraft {
 			hex != '' AND
 			registration_processed = false
 		ORDER BY first_seen ASC
-		LIMIT 10`
+		LIMIT 1`
 
 	rows, err := pg.db.Query(context.Background(), query)
 
@@ -47,9 +103,51 @@ func getAircraftWithoutRegistrationProcessed(pg *postgres) []Aircraft {
 	return aircrafts
 }
 
-/* TODO
-- check if hex already in the aircraft_registration table
-	- if so, update registration_processed to true
-	- if not, create list to send to adsbdb.com
+func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Aircraft, new []Aircraft) {
 
-*/
+	var hexValues []string
+	for _, a := range aircraftToProcess {
+		hexValues = append(hexValues, strings.ToUpper(a.Hex))
+	}
+
+	existingRegistrations := make(map[string]*Aircraft)
+
+	query := `
+		SELECT id, mode_s
+		FROM registration_data
+		WHERE mode_s = ANY($1::text[])`
+
+	rows, err := pg.db.Query(context.Background(), query, hexValues)
+
+	if err != nil {
+		fmt.Println("checkIfRegistrationInformationExists() - Error querying db: ", err)
+		return nil, nil
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var registration Aircraft
+		err := rows.Scan(
+			&registration.Id,
+			&registration.Hex,
+		)
+
+		if err != nil {
+			fmt.Println("checkIfRegistrationInformationExists() - Error scanning rows: ", err)
+			continue
+		}
+
+		existingRegistrations[registration.Hex] = &registration
+	}
+
+	for _, a := range aircraftToProcess {
+		if _, ok := existingRegistrations[a.Hex]; ok {
+			existing = append(existing, a)
+		} else {
+			new = append(new, a)
+		}
+	}
+
+	return existing, new
+
+}
