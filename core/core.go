@@ -57,7 +57,7 @@ func main() {
 
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
 	updateStatisticsTicker := time.NewTicker(4 * time.Second)
-	updateRoutesTicker := time.NewTicker(30 * time.Second)
+	updateRoutesTicker := time.NewTicker(10 * time.Second)
 
 	defer func() {
 		fmt.Println("Closing database connection")

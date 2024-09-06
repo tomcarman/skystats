@@ -55,7 +55,7 @@ type Aircraft struct {
 	SlowestProcessed bool
 }
 
-type AdsbdbRegistration struct {
+type RegistrationInfo struct {
 	Response struct {
 		Aircraft struct {
 			Type                            string `json:"type"`

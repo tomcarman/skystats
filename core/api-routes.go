@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func updateRoutes(pg *postgres) {
@@ -21,23 +23,105 @@ func updateRoutes(pg *postgres) {
 
 	existing, new := checkRegistrationExists(pg, aircrafts)
 
+	fmt.Println("Unprocessed: ", len(aircrafts))
 	fmt.Println("Existing: ", len(existing))
 	fmt.Println("New: ", len(new))
 
-	registration, err := getRoute(new[0])
-
-	if err != nil {
-		fmt.Println("Error getting route: ", err)
-		return
+	if len(new) > 50 {
+		new = new[:50]
 	}
 
-	fmt.Println("Registration: ", registration)
+	var registrations []RegistrationInfo
 
-	// MarkProcessed(pg, "registration_processed", existing)
+	for _, aircraft := range new {
+
+		registration, err := getRoute(aircraft)
+
+		if err != nil {
+			fmt.Println("Error getting route: ", err)
+			continue
+		}
+
+		if registration.Response.Aircraft.ModeS == "" {
+			fmt.Printf("\nNo registration found for %s", aircraft.Hex)
+			continue
+		}
+
+		fmt.Printf("\nResgistration for %s: %v", aircraft.Hex, registration)
+
+		registrations = append(registrations, *registration)
+
+		existing = append(existing, aircraft)
+
+	}
+
+	insertRegistrations(pg, registrations)
+
+	fmt.Printf("Existing about to be marked as processed: %v", existing)
+	MarkProcessed(pg, "registration_processed", existing)
 
 }
 
-func getRoute(aircraft Aircraft) (*AdsbdbRegistration, error) {
+func insertRegistrations(pg *postgres, registrations []RegistrationInfo) {
+
+	batch := &pgx.Batch{}
+
+	for _, registration := range registrations {
+		insertStatement := `
+			INSERT INTO registration_data (
+				type,
+				icao_type,
+				manufacturer,
+				mode_s,
+				registration,
+				registered_owner_country_iso_name,
+				registered_owner_country_name,
+				registered_owner_operator_flag_code,
+				registered_owner,
+				url_photo,
+				url_photo_thumbnail) 
+			VALUES ( 
+				$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+			ON CONFLICT (mode_s)
+			DO UPDATE SET
+				type = EXCLUDED.type,
+				icao_type = EXCLUDED.icao_type,
+				manufacturer = EXCLUDED.manufacturer,
+				registration = EXCLUDED.registration,
+				registered_owner_country_iso_name = EXCLUDED.registered_owner_country_iso_name,
+				registered_owner_country_name = EXCLUDED.registered_owner_country_name,
+				registered_owner_operator_flag_code = EXCLUDED.registered_owner_operator_flag_code,
+				registered_owner = EXCLUDED.registered_owner,
+				url_photo = EXCLUDED.url_photo,
+				url_photo_thumbnail = EXCLUDED.url_photo_thumbnail`
+
+		batch.Queue(insertStatement,
+			registration.Response.Aircraft.Type,
+			registration.Response.Aircraft.IcaoType,
+			registration.Response.Aircraft.Manufacturer,
+			strings.ToLower(registration.Response.Aircraft.ModeS),
+			registration.Response.Aircraft.Registration,
+			registration.Response.Aircraft.RegisteredOwnerCountryIsoName,
+			registration.Response.Aircraft.RegisteredOwnerCountryName,
+			registration.Response.Aircraft.RegisteredOwnerOperatorFlagCode,
+			registration.Response.Aircraft.RegisteredOwner,
+			registration.Response.Aircraft.URLPhoto,
+			registration.Response.Aircraft.URLPhotoThumbnail)
+	}
+
+	br := pg.db.SendBatch(context.Background(), batch)
+	defer br.Close()
+
+	for i := 0; i < len(registrations); i++ {
+		_, err := br.Exec()
+		if err != nil {
+			fmt.Println("insertRegistrations() - Unable to insert data: ", err)
+		}
+	}
+
+}
+
+func getRoute(aircraft Aircraft) (*RegistrationInfo, error) {
 
 	url := os.Getenv("ADSB_DB_AIRCRAFT_ENDPOINT")
 	url += aircraft.Hex
@@ -54,7 +138,7 @@ func getRoute(aircraft Aircraft) (*AdsbdbRegistration, error) {
 		return nil, err
 	}
 
-	var registrationResponse AdsbdbRegistration
+	var registrationResponse RegistrationInfo
 	json.Unmarshal(data, &registrationResponse)
 
 	return &registrationResponse, nil
@@ -69,8 +153,7 @@ func unprocessed(pg *postgres) []Aircraft {
 		WHERE 
 			hex != '' AND
 			registration_processed = false
-		ORDER BY first_seen ASC
-		LIMIT 1`
+		ORDER BY first_seen ASC`
 
 	rows, err := pg.db.Query(context.Background(), query)
 
@@ -107,7 +190,8 @@ func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existi
 
 	var hexValues []string
 	for _, a := range aircraftToProcess {
-		hexValues = append(hexValues, strings.ToUpper(a.Hex))
+		// hexValues = append(hexValues, strings.ToUpper(a.Hex))
+		hexValues = append(hexValues, a.Hex)
 	}
 
 	existingRegistrations := make(map[string]*Aircraft)
