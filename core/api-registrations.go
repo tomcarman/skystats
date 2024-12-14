@@ -12,20 +12,20 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func updateRoutes(pg *postgres) {
+func updateRegistrations(pg *postgres) {
 
 	aircrafts := unprocessed(pg)
 
 	if len(aircrafts) == 0 {
-		fmt.Println("No aircrafts to process")
+		// fmt.Println("No aircrafts to process")
 		return
 	}
 
 	existing, new := checkRegistrationExists(pg, aircrafts)
 
-	fmt.Println("Unprocessed: ", len(aircrafts))
-	fmt.Println("Existing: ", len(existing))
-	fmt.Println("New: ", len(new))
+	// fmt.Println("Unprocessed: ", len(aircrafts))
+	// fmt.Println("Existing: ", len(existing))
+	// fmt.Println("New: ", len(new))
 
 	if len(new) > 50 {
 		new = new[:50]
@@ -35,19 +35,20 @@ func updateRoutes(pg *postgres) {
 
 	for _, aircraft := range new {
 
-		registration, err := getRoute(aircraft)
+		registration, err := getRegistration(aircraft)
 
 		if err != nil {
-			fmt.Println("Error getting route: ", err)
+			fmt.Println("Error getting registration: ", err)
 			continue
 		}
 
 		if registration.Response.Aircraft.ModeS == "" {
-			fmt.Printf("\nNo registration found for %s", aircraft.Hex)
+			fmt.Printf("No registration found for %s", aircraft.Hex)
+			existing = append(existing, aircraft)
 			continue
 		}
 
-		fmt.Printf("\nResgistration for %s: %v", aircraft.Hex, registration)
+		// fmt.Printf("Resgistration for %s: %v", aircraft.Hex, registration)
 
 		registrations = append(registrations, *registration)
 
@@ -57,7 +58,7 @@ func updateRoutes(pg *postgres) {
 
 	insertRegistrations(pg, registrations)
 
-	fmt.Printf("Existing about to be marked as processed: %v", existing)
+	// fmt.Printf("Existing about to be marked as processed: %v", existing)
 	MarkProcessed(pg, "registration_processed", existing)
 
 }
@@ -121,7 +122,7 @@ func insertRegistrations(pg *postgres, registrations []RegistrationInfo) {
 
 }
 
-func getRoute(aircraft Aircraft) (*RegistrationInfo, error) {
+func getRegistration(aircraft Aircraft) (*RegistrationInfo, error) {
 
 	url := os.Getenv("ADSB_DB_AIRCRAFT_ENDPOINT")
 	url += aircraft.Hex
@@ -182,7 +183,7 @@ func unprocessed(pg *postgres) []Aircraft {
 		aircrafts = append(aircrafts, aircraft)
 	}
 
-	fmt.Println("Aircrafts that have not have route processed: ", len(aircrafts))
+	fmt.Println("Aircrafts that have not have registration processed: ", len(aircrafts))
 	return aircrafts
 }
 

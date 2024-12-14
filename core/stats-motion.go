@@ -416,6 +416,6 @@ func getAircraftsForMeasurementStatistics(pg *postgres) []Aircraft {
 		aircrafts = append(aircrafts, aircraft)
 	}
 
-	fmt.Println("Aircrafts that have not been processed: ", len(aircrafts))
+	fmt.Println("Aircrafts that have not have statistics processed: ", len(aircrafts))
 	return aircrafts
 }
