@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 type Response struct {
 	Now      float64    `json:"now"`
@@ -55,6 +58,13 @@ type Aircraft struct {
 	SlowestProcessed bool
 }
 
+// Flight string sometimes has trailing whitespace
+func (r *Response) TrimFlightStrings() {
+	for i := range r.Aircraft {
+		r.Aircraft[i].Flight = strings.TrimSpace(r.Aircraft[i].Flight)
+	}
+}
+
 type RegistrationInfo struct {
 	Response struct {
 		Aircraft struct {
@@ -70,5 +80,45 @@ type RegistrationInfo struct {
 			URLPhoto                        any    `json:"url_photo"`
 			URLPhotoThumbnail               any    `json:"url_photo_thumbnail"`
 		} `json:"aircraft"`
+	} `json:"response"`
+}
+
+type RouteInfo struct {
+	Response struct {
+		Flightroute struct {
+			Callsign     string `json:"callsign"`
+			CallsignIcao string `json:"callsign_icao"`
+			CallsignIata string `json:"callsign_iata"`
+			Airline      struct {
+				Name       string `json:"name"`
+				Icao       string `json:"icao"`
+				Iata       string `json:"iata"`
+				Country    string `json:"country"`
+				CountryIso string `json:"country_iso"`
+				Callsign   string `json:"callsign"`
+			} `json:"airline"`
+			Origin struct {
+				CountryIsoName string  `json:"country_iso_name"`
+				CountryName    string  `json:"country_name"`
+				Elevation      int     `json:"elevation"`
+				IataCode       string  `json:"iata_code"`
+				IcaoCode       string  `json:"icao_code"`
+				Latitude       float64 `json:"latitude"`
+				Longitude      float64 `json:"longitude"`
+				Municipality   string  `json:"municipality"`
+				Name           string  `json:"name"`
+			} `json:"origin"`
+			Destination struct {
+				CountryIsoName string  `json:"country_iso_name"`
+				CountryName    string  `json:"country_name"`
+				Elevation      int     `json:"elevation"`
+				IataCode       string  `json:"iata_code"`
+				IcaoCode       string  `json:"icao_code"`
+				Latitude       float64 `json:"latitude"`
+				Longitude      float64 `json:"longitude"`
+				Municipality   string  `json:"municipality"`
+				Name           string  `json:"name"`
+			} `json:"destination"`
+		} `json:"flightroute"`
 	} `json:"response"`
 }

@@ -14,18 +14,13 @@ import (
 
 func updateRegistrations(pg *postgres) {
 
-	aircrafts := unprocessed(pg)
+	aircrafts := unprocessedRegistrations(pg)
 
 	if len(aircrafts) == 0 {
-		// fmt.Println("No aircrafts to process")
 		return
 	}
 
 	existing, new := checkRegistrationExists(pg, aircrafts)
-
-	// fmt.Println("Unprocessed: ", len(aircrafts))
-	// fmt.Println("Existing: ", len(existing))
-	// fmt.Println("New: ", len(new))
 
 	if len(new) > 50 {
 		new = new[:50]
@@ -48,8 +43,6 @@ func updateRegistrations(pg *postgres) {
 			continue
 		}
 
-		// fmt.Printf("Resgistration for %s: %v", aircraft.Hex, registration)
-
 		registrations = append(registrations, *registration)
 
 		existing = append(existing, aircraft)
@@ -58,7 +51,6 @@ func updateRegistrations(pg *postgres) {
 
 	insertRegistrations(pg, registrations)
 
-	// fmt.Printf("Existing about to be marked as processed: %v", existing)
 	MarkProcessed(pg, "registration_processed", existing)
 
 }
@@ -146,7 +138,7 @@ func getRegistration(aircraft Aircraft) (*RegistrationInfo, error) {
 
 }
 
-func unprocessed(pg *postgres) []Aircraft {
+func unprocessedRegistrations(pg *postgres) []Aircraft {
 
 	query := `
 		SELECT id, hex
@@ -159,7 +151,7 @@ func unprocessed(pg *postgres) []Aircraft {
 	rows, err := pg.db.Query(context.Background(), query)
 
 	if err != nil {
-		fmt.Println("getAircraftWithoutRegistrationProcessed() - Error querying db: ", err)
+		fmt.Println("unprocessedRegistrations() - Error querying db: ", err)
 		return nil
 	}
 	defer rows.Close()
@@ -176,7 +168,7 @@ func unprocessed(pg *postgres) []Aircraft {
 		)
 
 		if err != nil {
-			fmt.Println("getAircraftWithoutRegistrationProcessed() - Error scanning rows: ", err)
+			fmt.Println("unprocessedRegistrations() - Error scanning rows: ", err)
 			return nil
 		}
 
@@ -191,7 +183,6 @@ func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existi
 
 	var hexValues []string
 	for _, a := range aircraftToProcess {
-		// hexValues = append(hexValues, strings.ToUpper(a.Hex))
 		hexValues = append(hexValues, a.Hex)
 	}
 
@@ -205,7 +196,7 @@ func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existi
 	rows, err := pg.db.Query(context.Background(), query, hexValues)
 
 	if err != nil {
-		fmt.Println("checkIfRegistrationInformationExists() - Error querying db: ", err)
+		fmt.Println("checkRegistrationExists() - Error querying db: ", err)
 		return nil, nil
 	}
 	defer rows.Close()
@@ -218,7 +209,7 @@ func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existi
 		)
 
 		if err != nil {
-			fmt.Println("checkIfRegistrationInformationExists() - Error scanning rows: ", err)
+			fmt.Println("checkRegistrationExists() - Error scanning rows: ", err)
 			continue
 		}
 

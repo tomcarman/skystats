@@ -24,6 +24,8 @@ func updateAircraftDatabase(pg *postgres) {
 	var response Response
 	json.Unmarshal(responseData, &response)
 
+	response.TrimFlightStrings()
+
 	loc := []float64{getLat(), getLon()}
 
 	var aircraftsInRange []Aircraft
