@@ -59,6 +59,7 @@ func main() {
 	updateStatisticsTicker := time.NewTicker(10 * time.Second)
 	updateRegistrationsTicker := time.NewTicker(20 * time.Second)
 	updateRoutesTicker := time.NewTicker(20 * time.Second)
+	updateInterestingSeenTicker := time.NewTicker(8 * time.Second)
 
 	defer func() {
 		fmt.Println("Closing database connection")
@@ -66,6 +67,7 @@ func main() {
 		updateStatisticsTicker.Stop()
 		updateRegistrationsTicker.Stop()
 		updateRoutesTicker.Stop()
+		updateInterestingSeenTicker.Stop()
 		pg.Close()
 	}()
 
@@ -83,6 +85,9 @@ func main() {
 		case <-updateRoutesTicker.C:
 			fmt.Println("Update Routes: ", time.Now().Format("2006-01-02 15:04:05"))
 			updateRoutes(pg)
+		case <-updateInterestingSeenTicker.C:
+			fmt.Println("Update Interesting Seen: ", time.Now().Format("2006-01-02 15:04:05"))
+			updateInterestingSeen(pg)
 		}
 	}
 }
