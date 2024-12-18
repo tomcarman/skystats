@@ -87,7 +87,6 @@ func updateInterestingSeen(pg *postgres) {
 		interestingAircrafts = append(interestingAircrafts, interestingAircraft)
 	}
 
-	// Add aircraft data to interestingAircrafts
 	for i := range interestingAircrafts {
 		interestingAircraft := &interestingAircrafts[i]
 		if aircraft, ok := aircraftsMap[interestingAircraft.Icao]; ok {
@@ -112,8 +111,6 @@ func updateInterestingSeen(pg *postgres) {
 	}
 
 	fmt.Println("Interesting aircrafts found: ", len(interestingAircrafts))
-
-	// Insert interesting aircraft into interesting_aircraft_seen
 
 	batch := &pgx.Batch{}
 
@@ -202,12 +199,9 @@ func updateInterestingSeen(pg *postgres) {
 		}
 	}
 
-	// Mark all as processed
 	MarkProcessed(pg, "interesting_processed", aircrafts)
 
 }
-
-// Mark all as processed
 
 func unprocessedInteresting(pg *postgres) []Aircraft {
 
