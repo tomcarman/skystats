@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,4 +37,14 @@ func (pg *postgres) Ping(ctx context.Context) error {
 
 func (pg *postgres) Close() {
 	pg.db.Close()
+}
+
+func GetConnectionUrl() string {
+
+	return "postgres://" +
+		os.Getenv("DB_USER") + ":" +
+		os.Getenv("DB_PASSWORD") + "@" +
+		os.Getenv("DB_HOST") + ":" +
+		os.Getenv("DB_PORT") + "/" +
+		os.Getenv("DB_NAME")
 }
