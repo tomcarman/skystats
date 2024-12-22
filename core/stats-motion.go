@@ -47,6 +47,9 @@ func updateLowestAircraft(pg *postgres, aircrafts []Aircraft) {
 	var aircraftsToInsert []Aircraft
 
 	for _, aircraft := range aircraftToProcess {
+		if aircraft.AltBaro < 1 {
+			continue
+		}
 		if aircraft.AltBaro < lowestAircraftCeiling {
 			aircraftsToInsert = append(aircraftsToInsert, aircraft)
 		} else {
@@ -219,6 +222,10 @@ func updateSlowestAircraft(pg *postgres, aircrafts []Aircraft) {
 	var aircraftsToInsert []Aircraft
 
 	for _, aircraft := range aircraftToProcess {
+		if aircraft.Gs < 1 {
+			continue
+		}
+
 		if aircraft.Gs < slowestAircraftCeiling {
 			aircraftsToInsert = append(aircraftsToInsert, aircraft)
 		} else {
