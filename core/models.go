@@ -1,4 +1,4 @@
-package main
+package skystats
 
 import (
 	"database/sql"

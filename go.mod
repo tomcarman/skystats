@@ -1,4 +1,4 @@
-module skystats/core
+module github.com/tomcarman/skystats
 
 go 1.22.6
 

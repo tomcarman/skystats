@@ -1,4 +1,4 @@
-package main
+package skystats
 
 import (
 	"context"
@@ -33,6 +33,8 @@ func main() {
 		WorkDir:     "./",
 		Umask:       027,
 	}
+
+	// Api()
 
 	d, err := cntxt.Reborn()
 	if err != nil {
@@ -91,6 +93,7 @@ func main() {
 			updateInterestingSeen(pg)
 		}
 	}
+
 }
 
 // func getDbName() string {
