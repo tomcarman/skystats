@@ -13,7 +13,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 )
 
-func main() {
+func Main() {
 
 	err := godotenv.Load()
 	if err != nil {
