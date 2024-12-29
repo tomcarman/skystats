@@ -1,4 +1,4 @@
-package skystats
+package main
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/sevlyar/go-daemon"
 )
 
-func Main() {
+func main() {
 
 	err := godotenv.Load()
 	if err != nil {

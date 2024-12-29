@@ -1,4 +1,4 @@
-package skystats
+package main
 
 import (
 	"context"
