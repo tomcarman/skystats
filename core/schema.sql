@@ -10,7 +10,7 @@ SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_§th', '', false);
+SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
@@ -79,7 +79,11 @@ CREATE TABLE public.aircraft_data (
     highest_aircraft_processed boolean DEFAULT false,
     lowest_aircraft_processed boolean DEFAULT false,
     fastest_aircraft_processed boolean DEFAULT false,
-    slowest_aircraft_processed boolean DEFAULT false
+    slowest_aircraft_processed boolean DEFAULT false,
+    db_flags integer,
+    route_processed boolean DEFAULT false,
+    registration_processed boolean DEFAULT false,
+    interesting_processed boolean DEFAULT false
 );
 
 
@@ -105,6 +109,50 @@ ALTER SEQUENCE public.aircraft_data_id_seq OWNER TO admin;
 --
 
 ALTER SEQUENCE public.aircraft_data_id_seq OWNED BY public.aircraft_data.id;
+
+
+--
+-- Name: registration_data; Type: TABLE; Schema: public; Owner: admin
+--
+
+CREATE TABLE public.registration_data (
+    id integer NOT NULL,
+    type character varying,
+    icao_type character varying,
+    manufacturer character varying,
+    mode_s character varying,
+    registration character varying,
+    registered_owner_country_iso_name character varying,
+    registered_owner_country_name character varying,
+    registered_owner_operator_flag_code character varying,
+    registered_owner character varying,
+    url_photo character varying,
+    url_photo_thumbnail character varying
+);
+
+
+ALTER TABLE public.registration_data OWNER TO admin;
+
+--
+-- Name: aircraft_registration_id_seq; Type: SEQUENCE; Schema: public; Owner: admin
+--
+
+CREATE SEQUENCE public.aircraft_registration_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.aircraft_registration_id_seq OWNER TO admin;
+
+--
+-- Name: aircraft_registration_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
+--
+
+ALTER SEQUENCE public.aircraft_registration_id_seq OWNED BY public.registration_data.id;
 
 
 --
@@ -150,6 +198,66 @@ ALTER SEQUENCE public.fastest_aircraft_id_seq OWNED BY public.fastest_aircraft.i
 
 
 --
+-- Name: route_data; Type: TABLE; Schema: public; Owner: admin
+--
+
+CREATE TABLE public.route_data (
+    id integer NOT NULL,
+    route_callsign character varying,
+    route_callsign_icao character varying,
+    route_callsign_iata character varying,
+    airline_name character varying,
+    airline_icao character varying,
+    airline_iata character varying,
+    airline_country character varying,
+    airline_country_iso character varying,
+    airline_callsign character varying,
+    origin_country_iso_name character varying,
+    origin_country_name character varying,
+    origin_elevation integer,
+    origin_iata_code character varying,
+    origin_icao_code character varying,
+    origin_latitude numeric(9,6),
+    origin_longitude numeric(9,6),
+    origin_municipality character varying,
+    origin_name character varying,
+    destination_country_iso_name character varying,
+    destination_country_name character varying,
+    destination_elevation integer,
+    destination_iata_code character varying,
+    destination_icao_code character varying,
+    destination_latitude numeric(9,6),
+    destination_longitude numeric(9,6),
+    destination_municipality character varying,
+    destination_name character varying
+);
+
+
+ALTER TABLE public.route_data OWNER TO admin;
+
+--
+-- Name: flight_route_id_seq; Type: SEQUENCE; Schema: public; Owner: admin
+--
+
+CREATE SEQUENCE public.flight_route_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.flight_route_id_seq OWNER TO admin;
+
+--
+-- Name: flight_route_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: admin
+--
+
+ALTER SEQUENCE public.flight_route_id_seq OWNED BY public.route_data.id;
+
+
+--
 -- Name: highest_aircraft; Type: TABLE; Schema: public; Owner: admin
 --
 
@@ -189,6 +297,75 @@ ALTER SEQUENCE public.highest_aircraft_id_seq OWNER TO admin;
 
 ALTER SEQUENCE public.highest_aircraft_id_seq OWNED BY public.highest_aircraft.id;
 
+
+--
+-- Name: interesting_aircraft; Type: TABLE; Schema: public; Owner: admin
+--
+
+CREATE TABLE public.interesting_aircraft (
+    icao text,
+    registration text,
+    operator text,
+    type text,
+    icao_type text,
+    "group" text,
+    tag1 text,
+    tag2 text,
+    tag3 text,
+    category text,
+    link text,
+    image_link_1 text,
+    image_link_2 text,
+    image_link_3 text,
+    image_link_4 text
+);
+
+
+ALTER TABLE public.interesting_aircraft OWNER TO admin;
+
+--
+-- Name: interesting_aircraft_seen; Type: TABLE; Schema: public; Owner: admin
+--
+
+CREATE TABLE public.interesting_aircraft_seen (
+    icao text,
+    registration text,
+    operator text,
+    type text,
+    icao_type text,
+    "group" text,
+    tag1 text,
+    tag2 text,
+    tag3 text,
+    category text,
+    link text,
+    image_link_1 text,
+    image_link_2 text,
+    image_link_3 text,
+    image_link_4 text,
+    hex text,
+    flight text,
+    seen timestamp with time zone,
+    seen_epoch bigint,
+    r text,
+    t text,
+    alt_baro integer,
+    alt_geom integer,
+    gs numeric(6,1),
+    ias integer,
+    tas integer,
+    track numeric(5,2),
+    baro_rate integer,
+    squawk text,
+    emergency text,
+    lat numeric(9,6),
+    lon numeric(9,6),
+    alert integer,
+    db_flags integer
+);
+
+
+ALTER TABLE public.interesting_aircraft_seen OWNER TO admin;
 
 --
 -- Name: lowest_aircraft; Type: TABLE; Schema: public; Owner: admin
@@ -320,6 +497,20 @@ ALTER TABLE ONLY public.lowest_aircraft ALTER COLUMN id SET DEFAULT nextval('pub
 
 
 --
+-- Name: registration_data id; Type: DEFAULT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.registration_data ALTER COLUMN id SET DEFAULT nextval('public.aircraft_registration_id_seq'::regclass);
+
+
+--
+-- Name: route_data id; Type: DEFAULT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.route_data ALTER COLUMN id SET DEFAULT nextval('public.flight_route_id_seq'::regclass);
+
+
+--
 -- Name: slowest_aircraft id; Type: DEFAULT; Schema: public; Owner: admin
 --
 
@@ -375,6 +566,22 @@ ALTER TABLE ONLY public.lowest_aircraft
 
 
 --
+-- Name: registration_data mode_s_unique; Type: CONSTRAINT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.registration_data
+    ADD CONSTRAINT mode_s_unique UNIQUE (mode_s);
+
+
+--
+-- Name: route_data route_callsign_unique; Type: CONSTRAINT; Schema: public; Owner: admin
+--
+
+ALTER TABLE ONLY public.route_data
+    ADD CONSTRAINT route_callsign_unique UNIQUE (route_callsign);
+
+
+--
 -- Name: slowest_aircraft slowest_aircraft_pkey; Type: CONSTRAINT; Schema: public; Owner: admin
 --
 
@@ -393,3 +600,4 @@ ALTER TABLE ONLY public.slowest_aircraft
 --
 -- PostgreSQL database dump complete
 --
+
