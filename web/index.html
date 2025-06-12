@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyStats Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✈️ SkyStats Dashboard</h1>
+            <p>Real-time aircraft tracking statistics</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>📊 General Statistics</h3>
+                <div id="general-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Aircraft:</span>
+                        <span class="stat-value" id="total-aircraft">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Today's Aircraft:</span>
+                        <span class="stat-value" id="today-aircraft">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Unique Types:</span>
+                        <span class="stat-value" id="unique-types">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Interesting Aircraft:</span>
+                        <span class="stat-value" id="interesting-count">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Fastest Speed:</span>
+                        <span class="stat-value" id="fastest-speed">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Highest Altitude:</span>
+                        <span class="stat-value" id="highest-altitude">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>🚀 Fastest Aircraft</h3>
+                <div id="fastest-aircraft" class="aircraft-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>🐌 Slowest Aircraft</h3>
+                <div id="slowest-aircraft" class="aircraft-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>⬆️ Highest Aircraft</h3>
+                <div id="highest-aircraft" class="aircraft-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <h3>⬇️ Lowest Aircraft</h3>
+                <div id="lowest-aircraft" class="aircraft-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="stat-card wide">
+                <h3>⭐ Interesting Aircraft</h3>
+                <div id="interesting-aircraft" class="aircraft-list">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Last updated: <span id="last-updated">-</span></p>
+            <button id="refresh-btn" onclick="loadAllData()">🔄 Refresh</button>
+        </footer>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
