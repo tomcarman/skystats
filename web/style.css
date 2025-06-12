@@ -178,6 +178,112 @@ header p {
     margin: 10px 0;
 }
 
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: #a0aec0;
+    font-style: italic;
+    background: #f7fafc;
+    border-radius: 8px;
+}
+
+/* Route Statistics Styles */
+#route-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.route-overview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #4299e1;
+}
+
+.route-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.route-section {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 4px solid #48bb78;
+}
+
+.route-section h4 {
+    font-size: 1.1rem;
+    color: #4a5568;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.route-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.route-item {
+    background: white;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 6px;
+    border-left: 3px solid #4299e1;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.route-item:hover {
+    background: #f0f9ff;
+    transform: translateX(2px);
+}
+
+.route-item:last-child {
+    margin-bottom: 0;
+}
+
+.route-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.route-name {
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 0.95rem;
+}
+
+.route-count {
+    background: #4299e1;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+}
+
+.route-detail {
+    display: flex;
+    align-items: center;
+}
+
+.route-code {
+    font-size: 0.8rem;
+    color: #718096;
+    font-weight: 500;
+}
+
 footer {
     text-align: center;
     padding: 20px;
@@ -236,5 +342,17 @@ footer {
     
     #refresh-btn {
         margin-left: 0;
+    }
+    
+    .route-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .route-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .route-section {
+        padding: 12px;
     }
 }

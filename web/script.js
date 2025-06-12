@@ -19,7 +19,8 @@ async function loadAllData() {
         loadSlowestAircraft(),
         loadHighestAircraft(),
         loadLowestAircraft(),
-        loadInterestingAircraft()
+        loadInterestingAircraft(),
+        loadRouteStats()
     ]);
 }
 
@@ -205,6 +206,134 @@ function formatDate(dateString) {
     } catch (error) {
         return dateString;
     }
+}
+
+async function loadRouteStats() {
+    try {
+        const response = await fetch(`${API_BASE}/stats/routes`);
+        const data = await response.json();
+        
+        // Update overview stats
+        document.getElementById('total-routes').textContent = data.total_routes?.toLocaleString() || '-';
+        document.getElementById('domestic-flights').textContent = data.international_vs_domestic?.domestic?.toLocaleString() || '-';
+        document.getElementById('international-flights').textContent = data.international_vs_domestic?.international?.toLocaleString() || '-';
+        document.getElementById('average-distance').textContent = data.average_route_distance ? `${data.average_route_distance.toFixed(0)} km` : '-';
+        
+        // Update top airlines
+        const airlinesContainer = document.getElementById('top-airlines');
+        if (data.top_airlines && data.top_airlines.length > 0) {
+            airlinesContainer.innerHTML = data.top_airlines.map(airline => createAirlineItem(airline)).join('');
+        } else {
+            airlinesContainer.innerHTML = '<div class="no-data">No airline data available</div>';
+        }
+        
+        // Update top routes
+        const routesContainer = document.getElementById('top-routes');
+        if (data.top_routes && data.top_routes.length > 0) {
+            routesContainer.innerHTML = data.top_routes.map(route => createRouteItem(route)).join('');
+        } else {
+            routesContainer.innerHTML = '<div class="no-data">No route data available</div>';
+        }
+        
+        // Update top airports (combining origin and destination)
+        const airportsContainer = document.getElementById('top-airports');
+        if (data.top_origin_airports && data.top_origin_airports.length > 0) {
+            airportsContainer.innerHTML = data.top_origin_airports.slice(0, 5).map(airport => createAirportItem(airport)).join('');
+        } else {
+            airportsContainer.innerHTML = '<div class="no-data">No airport data available</div>';
+        }
+        
+        // Update top countries
+        const countriesContainer = document.getElementById('top-countries');
+        if (data.top_countries && data.top_countries.length > 0) {
+            countriesContainer.innerHTML = data.top_countries.map(country => createCountryItem(country)).join('');
+        } else {
+            countriesContainer.innerHTML = '<div class="no-data">No country data available</div>';
+        }
+        
+    } catch (error) {
+        console.error('Error loading route stats:', error);
+        // Set error messages for all route stat containers
+        const containers = ['top-airlines', 'top-routes', 'top-airports', 'top-countries'];
+        containers.forEach(containerId => {
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '<div class="error">Error loading data</div>';
+            }
+        });
+    }
+}
+
+function createAirlineItem(airline) {
+    const name = airline.airline_name || 'Unknown Airline';
+    const icao = airline.airline_icao || '';
+    const iata = airline.airline_iata || '';
+    const count = airline.count || 0;
+    
+    const codes = [icao, iata].filter(code => code).join(' / ');
+    
+    return `
+        <div class="route-item">
+            <div class="route-header">
+                <span class="route-name">${name}</span>
+                <span class="route-count">${count.toLocaleString()}</span>
+            </div>
+            <div class="route-detail">
+                <span class="route-code">${codes || 'No codes'}</span>
+            </div>
+        </div>
+    `;
+}
+
+function createRouteItem(route) {
+    const routeName = route.route || 'Unknown Route';
+    const count = route.count || 0;
+    
+    return `
+        <div class="route-item">
+            <div class="route-header">
+                <span class="route-name">${routeName}</span>
+                <span class="route-count">${count.toLocaleString()}</span>
+            </div>
+        </div>
+    `;
+}
+
+function createAirportItem(airport) {
+    const code = airport.airport_code || 'Unknown';
+    const name = airport.airport_name || 'Unknown Airport';
+    const country = airport.country || '';
+    const count = airport.count || 0;
+    
+    return `
+        <div class="route-item">
+            <div class="route-header">
+                <span class="route-name">${code} - ${name}</span>
+                <span class="route-count">${count.toLocaleString()}</span>
+            </div>
+            <div class="route-detail">
+                <span class="route-code">${country}</span>
+            </div>
+        </div>
+    `;
+}
+
+function createCountryItem(country) {
+    const name = country.country || 'Unknown Country';
+    const iso = country.country_iso || '';
+    const count = country.count || 0;
+    
+    return `
+        <div class="route-item">
+            <div class="route-header">
+                <span class="route-name">${name}</span>
+                <span class="route-count">${count.toLocaleString()}</span>
+            </div>
+            <div class="route-detail">
+                <span class="route-code">${iso}</span>
+            </div>
+        </div>
+    `;
 }
 
 function updateLastUpdated() {

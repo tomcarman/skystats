@@ -53,6 +53,7 @@ func (s *APIServer) Start() {
 			stats.GET("/lowest", s.handleLowestAircraft)
 			stats.GET("/interesting", s.handleInterestingAircraft)
 			stats.GET("/general", s.handleGeneralStats)
+			stats.GET("/routes", s.handleRouteStats)
 		}
 	}
 
@@ -338,6 +339,16 @@ func (s *APIServer) handleGeneralStats(c *gin.Context) {
 		"SELECT MAX(barometric_altitude) FROM highest_aircraft").Scan(&highestAltitude)
 	if err == nil {
 		stats["highest_altitude"] = highestAltitude
+	}
+
+	c.JSON(http.StatusOK, stats)
+}
+
+func (s *APIServer) handleRouteStats(c *gin.Context) {
+	stats, err := getRouteStatistics(s.pg)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, stats)
