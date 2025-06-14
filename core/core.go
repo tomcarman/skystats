@@ -34,8 +34,6 @@ func main() {
 		Umask:       027,
 	}
 
-	// Api()
-
 	d, err := cntxt.Reborn()
 	if err != nil {
 		fmt.Println("Unable to run: ", err)
@@ -57,6 +55,12 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	// Start API server in a separate goroutine
+	go func() {
+		apiServer := NewAPIServer(pg)
+		apiServer.Start()
+	}()
 
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
 	updateStatisticsTicker := time.NewTicker(120 * time.Second)
