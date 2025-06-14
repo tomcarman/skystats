@@ -49,7 +49,7 @@ async function loadFastestAircraft() {
         container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'speed')).join('');
     } catch (error) {
         console.error('Error loading fastest aircraft:', error);
-        container.innerHTML = '<div class="error">Error loading data</div>';
+        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
     }
 }
 
@@ -62,7 +62,7 @@ async function loadSlowestAircraft() {
         container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'speed')).join('');
     } catch (error) {
         console.error('Error loading slowest aircraft:', error);
-        container.innerHTML = '<div class="error">Error loading data</div>';
+        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
     }
 }
 
@@ -75,7 +75,7 @@ async function loadHighestAircraft() {
         container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'altitude')).join('');
     } catch (error) {
         console.error('Error loading highest aircraft:', error);
-        container.innerHTML = '<div class="error">Error loading data</div>';
+        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
     }
 }
 
@@ -88,7 +88,7 @@ async function loadLowestAircraft() {
         container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'altitude')).join('');
     } catch (error) {
         console.error('Error loading lowest aircraft:', error);
-        container.innerHTML = '<div class="error">Error loading data</div>';
+        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
     }
 }
 
@@ -101,7 +101,7 @@ async function loadInterestingAircraft() {
         container.innerHTML = data.map(aircraft => createInterestingAircraftItem(aircraft)).join('');
     } catch (error) {
         console.error('Error loading interesting aircraft:', error);
-        container.innerHTML = '<div class="error">Error loading data</div>';
+        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
     }
 }
 
@@ -129,29 +129,32 @@ function createAircraftItem(aircraft, type) {
     const seenDate = aircraft.first_seen ? formatDate(aircraft.first_seen) : '-';
     
     return `
-        <div class="aircraft-item">
-            <div class="aircraft-header">
-                <span class="aircraft-flight">${flight}</span>
-                <span class="aircraft-type">${aircraftType}</span>
-            </div>
-            <div class="aircraft-details">
-                <div class="aircraft-detail">
-                    <span class="detail-label">${type === 'speed' ? 'Ground Speed' : 'Altitude'}</span>
-                    <span class="detail-value">${primaryMetric}</span>
+        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span class="font-bold text-gray-900 text-lg">${flight}</span>
                 </div>
-                <div class="aircraft-detail">
-                    <span class="detail-label">Registration</span>
-                    <span class="detail-value">${registration}</span>
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-semibold">${aircraftType}</span>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">${type === 'speed' ? 'Ground Speed' : 'Altitude'}</span>
+                    <span class="block font-bold text-gray-900">${primaryMetric}</span>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Registration</span>
+                    <span class="block font-bold text-gray-900">${registration}</span>
                 </div>
                 ${secondaryMetrics.map(metric => `
-                    <div class="aircraft-detail">
-                        <span class="detail-label">${metric.label}</span>
-                        <span class="detail-value">${metric.value}</span>
+                    <div class="bg-gray-50 rounded-lg p-2">
+                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">${metric.label}</span>
+                        <span class="block font-bold text-gray-900">${metric.value}</span>
                     </div>
                 `).join('')}
-                <div class="aircraft-detail">
-                    <span class="detail-label">First Seen</span>
-                    <span class="detail-value">${seenDate}</span>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">First Seen</span>
+                    <span class="block font-bold text-gray-900">${seenDate}</span>
                 </div>
             </div>
         </div>
@@ -168,31 +171,34 @@ function createInterestingAircraftItem(aircraft) {
     const seenDate = aircraft.seen ? formatDate(aircraft.seen) : '-';
     
     return `
-        <div class="aircraft-item">
-            <div class="aircraft-header">
-                <span class="aircraft-flight">${flight}</span>
-                <span class="aircraft-type">${category}</span>
+        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-gray-300">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span class="font-bold text-gray-900 text-lg">${flight}</span>
+                </div>
+                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-sm font-semibold">${category}</span>
             </div>
-            <div class="aircraft-details">
-                <div class="aircraft-detail">
-                    <span class="detail-label">Registration</span>
-                    <span class="detail-value">${registration}</span>
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm">
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Registration</span>
+                    <span class="block font-bold text-gray-900">${registration}</span>
                 </div>
-                <div class="aircraft-detail">
-                    <span class="detail-label">Operator</span>
-                    <span class="detail-value">${operator}</span>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Operator</span>
+                    <span class="block font-bold text-gray-900">${operator}</span>
                 </div>
-                <div class="aircraft-detail">
-                    <span class="detail-label">Type</span>
-                    <span class="detail-value">${aircraftType}</span>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Type</span>
+                    <span class="block font-bold text-gray-900">${aircraftType}</span>
                 </div>
-                <div class="aircraft-detail">
-                    <span class="detail-label">Group</span>
-                    <span class="detail-value">${group}</span>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Group</span>
+                    <span class="block font-bold text-gray-900">${group}</span>
                 </div>
-                <div class="aircraft-detail">
-                    <span class="detail-label">Last Seen</span>
-                    <span class="detail-value">${seenDate}</span>
+                <div class="bg-gray-50 rounded-lg p-2">
+                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Last Seen</span>
+                    <span class="block font-bold text-gray-900">${seenDate}</span>
                 </div>
             </div>
         </div>
@@ -224,7 +230,7 @@ async function loadRouteStats() {
         if (data.top_airlines && data.top_airlines.length > 0) {
             airlinesContainer.innerHTML = data.top_airlines.map(airline => createAirlineItem(airline)).join('');
         } else {
-            airlinesContainer.innerHTML = '<div class="no-data">No airline data available</div>';
+            airlinesContainer.innerHTML = '<div class="text-center py-8 text-gray-500 bg-gray-50 border border-gray-200 rounded-lg">No airline data available</div>';
         }
         
         // Update top routes
@@ -232,7 +238,7 @@ async function loadRouteStats() {
         if (data.top_routes && data.top_routes.length > 0) {
             routesContainer.innerHTML = data.top_routes.map(route => createRouteItem(route)).join('');
         } else {
-            routesContainer.innerHTML = '<div class="no-data">No route data available</div>';
+            routesContainer.innerHTML = '<div class="text-center py-8 text-gray-500 bg-gray-50 border border-gray-200 rounded-lg">No route data available</div>';
         }
         
         // Update top airports (combining origin and destination)
@@ -240,7 +246,7 @@ async function loadRouteStats() {
         if (data.top_origin_airports && data.top_origin_airports.length > 0) {
             airportsContainer.innerHTML = data.top_origin_airports.slice(0, 5).map(airport => createAirportItem(airport)).join('');
         } else {
-            airportsContainer.innerHTML = '<div class="no-data">No airport data available</div>';
+            airportsContainer.innerHTML = '<div class="text-center py-8 text-gray-500 bg-gray-50 border border-gray-200 rounded-lg">No airport data available</div>';
         }
         
         // Update top countries
@@ -248,7 +254,7 @@ async function loadRouteStats() {
         if (data.top_countries && data.top_countries.length > 0) {
             countriesContainer.innerHTML = data.top_countries.map(country => createCountryItem(country)).join('');
         } else {
-            countriesContainer.innerHTML = '<div class="no-data">No country data available</div>';
+            countriesContainer.innerHTML = '<div class="text-center py-8 text-gray-500 bg-gray-50 border border-gray-200 rounded-lg">No country data available</div>';
         }
         
     } catch (error) {
@@ -258,7 +264,7 @@ async function loadRouteStats() {
         containers.forEach(containerId => {
             const container = document.getElementById(containerId);
             if (container) {
-                container.innerHTML = '<div class="error">Error loading data</div>';
+                container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
             }
         });
     }
@@ -273,13 +279,13 @@ function createAirlineItem(airline) {
     const codes = [icao, iata].filter(code => code).join(' / ');
     
     return `
-        <div class="route-item">
-            <div class="route-header">
-                <span class="route-name">${name}</span>
-                <span class="route-count">${count.toLocaleString()}</span>
+        <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold text-gray-900 text-sm">${name}</span>
+                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-xs font-bold min-w-[35px] text-center">${count.toLocaleString()}</span>
             </div>
-            <div class="route-detail">
-                <span class="route-code">${codes || 'No codes'}</span>
+            <div class="flex items-center">
+                <span class="text-xs text-gray-600 font-medium">${codes || 'No codes'}</span>
             </div>
         </div>
     `;
@@ -290,10 +296,10 @@ function createRouteItem(route) {
     const count = route.count || 0;
     
     return `
-        <div class="route-item">
-            <div class="route-header">
-                <span class="route-name">${routeName}</span>
-                <span class="route-count">${count.toLocaleString()}</span>
+        <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+            <div class="flex justify-between items-center">
+                <span class="font-semibold text-gray-900 text-sm">${routeName}</span>
+                <span class="bg-green-100 text-green-800 px-2 py-1 rounded-md text-xs font-bold min-w-[35px] text-center">${count.toLocaleString()}</span>
             </div>
         </div>
     `;
@@ -306,13 +312,13 @@ function createAirportItem(airport) {
     const count = airport.count || 0;
     
     return `
-        <div class="route-item">
-            <div class="route-header">
-                <span class="route-name">${code} - ${name}</span>
-                <span class="route-count">${count.toLocaleString()}</span>
+        <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold text-gray-900 text-sm">${code} - ${name}</span>
+                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-xs font-bold min-w-[35px] text-center">${count.toLocaleString()}</span>
             </div>
-            <div class="route-detail">
-                <span class="route-code">${country}</span>
+            <div class="flex items-center">
+                <span class="text-xs text-gray-600 font-medium">${country}</span>
             </div>
         </div>
     `;
@@ -324,13 +330,13 @@ function createCountryItem(country) {
     const count = country.count || 0;
     
     return `
-        <div class="route-item">
-            <div class="route-header">
-                <span class="route-name">${name}</span>
-                <span class="route-count">${count.toLocaleString()}</span>
+        <div class="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors duration-200 border border-gray-200">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold text-gray-900 text-sm">${name}</span>
+                <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-md text-xs font-bold min-w-[35px] text-center">${count.toLocaleString()}</span>
             </div>
-            <div class="route-detail">
-                <span class="route-code">${iso}</span>
+            <div class="flex items-center">
+                <span class="text-xs text-gray-600 font-medium">${iso}</span>
             </div>
         </div>
     `;
