@@ -4,129 +4,395 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SkyStats Dashboard</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': {
+                            50: '#eff6ff',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a'
+                        },
+                        'accent': {
+                            500: '#06b6d4',
+                            600: '#0891b2'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.3s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>✈️ SkyStats Dashboard</h1>
-            <p>Real-time aircraft tracking statistics</p>
-        </header>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>📊 General Statistics</h3>
-                <div id="general-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Total Aircraft:</span>
-                        <span class="stat-value" id="total-aircraft">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Today's Aircraft:</span>
-                        <span class="stat-value" id="today-aircraft">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Unique Types:</span>
-                        <span class="stat-value" id="unique-types">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Interesting Aircraft:</span>
-                        <span class="stat-value" id="interesting-count">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Fastest Speed:</span>
-                        <span class="stat-value" id="fastest-speed">-</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Highest Altitude:</span>
-                        <span class="stat-value" id="highest-altitude">-</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <h3>🚀 Fastest Aircraft</h3>
-                <div id="fastest-aircraft" class="aircraft-list">
-                    <div class="loading">Loading...</div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <h3>🐌 Slowest Aircraft</h3>
-                <div id="slowest-aircraft" class="aircraft-list">
-                    <div class="loading">Loading...</div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <h3>⬆️ Highest Aircraft</h3>
-                <div id="highest-aircraft" class="aircraft-list">
-                    <div class="loading">Loading...</div>
-                </div>
-            </div>
-
-            <div class="stat-card">
-                <h3>⬇️ Lowest Aircraft</h3>
-                <div id="lowest-aircraft" class="aircraft-list">
-                    <div class="loading">Loading...</div>
-                </div>
-            </div>
-
-            <div class="stat-card wide">
-                <h3>⭐ Interesting Aircraft</h3>
-                <div id="interesting-aircraft" class="aircraft-list">
-                    <div class="loading">Loading...</div>
-                </div>
-            </div>
-
-            <div class="stat-card wide">
-                <h3>🗺️ Route Statistics</h3>
-                <div id="route-stats">
-                    <div class="route-overview">
-                        <div class="stat-item">
-                            <span class="stat-label">Total Routes:</span>
-                            <span class="stat-value" id="total-routes">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Domestic Flights:</span>
-                            <span class="stat-value" id="domestic-flights">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">International Flights:</span>
-                            <span class="stat-value" id="international-flights">-</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Average Distance:</span>
-                            <span class="stat-value" id="average-distance">-</span>
+<body class="font-sans bg-gray-50 min-h-screen text-gray-900 antialiased">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                            </svg>
                         </div>
                     </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">SkyStats</h1>
+                        <p class="text-sm text-gray-500">Aircraft Tracking Dashboard</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <div class="text-sm text-gray-500">
+                        Last updated: <span id="last-updated" class="font-medium text-gray-900">-</span>
+                    </div>
+                    <button id="refresh-btn" onclick="loadAllData()" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-10">
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-primary-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">General Statistics</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="general-stats" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-blue-600">Total Aircraft</p>
+                                    <p class="text-2xl font-bold text-blue-900" id="total-aircraft">-</p>
+                                </div>
+                                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-green-600">Today's Aircraft</p>
+                                    <p class="text-2xl font-bold text-green-900" id="today-aircraft">-</p>
+                                </div>
+                                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-purple-600">Unique Types</p>
+                                    <p class="text-2xl font-bold text-purple-900" id="unique-types">-</p>
+                                </div>
+                                <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-yellow-600">Interesting Aircraft</p>
+                                    <p class="text-2xl font-bold text-yellow-900" id="interesting-count">-</p>
+                                </div>
+                                <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-red-600">Fastest Speed</p>
+                                    <p class="text-2xl font-bold text-red-900" id="fastest-speed">-</p>
+                                </div>
+                                <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-indigo-600">Highest Altitude</p>
+                                    <p class="text-2xl font-bold text-indigo-900" id="highest-altitude">-</p>
+                                </div>
+                                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Fastest Aircraft</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="fastest-aircraft" class="max-h-72 overflow-y-auto space-y-3">
+                        <div class="text-center py-10 text-gray-500 italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Slowest Aircraft</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="slowest-aircraft" class="max-h-72 overflow-y-auto space-y-3">
+                        <div class="text-center py-10 text-gray-500 italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Highest Aircraft</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="highest-aircraft" class="max-h-72 overflow-y-auto space-y-3">
+                        <div class="text-center py-10 text-gray-500 italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Lowest Aircraft</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="lowest-aircraft" class="max-h-72 overflow-y-auto space-y-3">
+                        <div class="text-center py-10 text-gray-500 italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 xl:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Interesting Aircraft</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="interesting-aircraft" class="max-h-72 overflow-y-auto space-y-3">
+                        <div class="text-center py-10 text-gray-500 italic">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 xl:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Route Statistics</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="route-stats" class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-blue-600">Total Routes</p>
+                                        <p class="text-xl font-bold text-blue-900" id="total-routes">-</p>
+                                    </div>
+                                    <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-green-600">Domestic Flights</p>
+                                        <p class="text-xl font-bold text-green-900" id="domestic-flights">-</p>
+                                    </div>
+                                    <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-purple-600">International</p>
+                                        <p class="text-xl font-bold text-purple-900" id="international-flights">-</p>
+                                    </div>
+                                    <div class="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-orange-600">Avg Distance</p>
+                                        <p class="text-xl font-bold text-orange-900" id="average-distance">-</p>
+                                    </div>
+                                    <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     
-                    <div class="route-details">
-                        <div class="route-section">
-                            <h4>Top Airlines</h4>
-                            <div id="top-airlines" class="route-list">
-                                <div class="loading">Loading...</div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+                            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                                    <h4 class="text-sm font-semibold text-gray-900 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        </svg>
+                                        Top Airlines
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div id="top-airlines" class="max-h-48 overflow-y-auto space-y-2">
+                                        <div class="text-center py-5 text-gray-500 italic">Loading...</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
                         
-                        <div class="route-section">
-                            <h4>Busiest Routes</h4>
-                            <div id="top-routes" class="route-list">
-                                <div class="loading">Loading...</div>
+                            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                                    <h4 class="text-sm font-semibold text-gray-900 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                        </svg>
+                                        Busiest Routes
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div id="top-routes" class="max-h-48 overflow-y-auto space-y-2">
+                                        <div class="text-center py-5 text-gray-500 italic">Loading...</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
                         
-                        <div class="route-section">
-                            <h4>Popular Airports</h4>
-                            <div id="top-airports" class="route-list">
-                                <div class="loading">Loading...</div>
+                            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                                    <h4 class="text-sm font-semibold text-gray-900 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                        </svg>
+                                        Popular Airports
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div id="top-airports" class="max-h-48 overflow-y-auto space-y-2">
+                                        <div class="text-center py-5 text-gray-500 italic">Loading...</div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
                         
-                        <div class="route-section">
-                            <h4>Top Countries</h4>
-                            <div id="top-countries" class="route-list">
-                                <div class="loading">Loading...</div>
+                            <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50 rounded-t-lg">
+                                    <h4 class="text-sm font-semibold text-gray-900 flex items-center">
+                                        <svg class="w-4 h-4 mr-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Top Countries
+                                    </h4>
+                                </div>
+                                <div class="p-4">
+                                    <div id="top-countries" class="max-h-48 overflow-y-auto space-y-2">
+                                        <div class="text-center py-5 text-gray-500 italic">Loading...</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -134,10 +400,7 @@
             </div>
         </div>
 
-        <footer>
-            <p>Last updated: <span id="last-updated">-</span></p>
-            <button id="refresh-btn" onclick="loadAllData()">🔄 Refresh</button>
-        </footer>
+        <!-- Footer moved to navigation bar -->
     </div>
 
     <script src="/static/script.js"></script>
