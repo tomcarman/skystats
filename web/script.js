@@ -101,7 +101,7 @@ async function loadInterestingAircraft() {
         container.innerHTML = data.map(aircraft => createInterestingAircraftItem(aircraft)).join('');
     } catch (error) {
         console.error('Error loading interesting aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -171,37 +171,22 @@ function createInterestingAircraftItem(aircraft) {
     const seenDate = aircraft.seen ? formatDate(aircraft.seen) : '-';
     
     return `
-        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-gray-300">
-            <div class="flex justify-between items-start mb-3">
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span class="font-bold text-gray-900 text-lg">${flight}</span>
+        <tr class="hover:bg-gray-50 transition-colors duration-200">
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                    <span class="text-sm font-medium text-gray-900">${flight}</span>
                 </div>
-                <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-sm font-semibold">${category}</span>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 text-sm">
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Registration</span>
-                    <span class="block font-bold text-gray-900">${registration}</span>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Operator</span>
-                    <span class="block font-bold text-gray-900">${operator}</span>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Type</span>
-                    <span class="block font-bold text-gray-900">${aircraftType}</span>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Group</span>
-                    <span class="block font-bold text-gray-900">${group}</span>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Last Seen</span>
-                    <span class="block font-bold text-gray-900">${seenDate}</span>
-                </div>
-            </div>
-        </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${registration}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${operator}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">${category}</span>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${group}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${seenDate}</td>
+        </tr>
     `;
 }
 
