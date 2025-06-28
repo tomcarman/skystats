@@ -20,7 +20,10 @@ async function loadAllData() {
         loadSlowestAircraft(),
         loadHighestAircraft(),
         loadLowestAircraft(),
-        loadInterestingAircraft(),
+        loadCivilianAircraft(),
+        loadPoliceAircraft(),
+        loadMilitaryAircraft(),
+        loadGovernmentAircraft(),
         loadRouteStats()
     ]);
 }
@@ -93,16 +96,55 @@ async function loadLowestAircraft() {
     }
 }
 
-async function loadInterestingAircraft() {
-    const container = document.getElementById('interesting-aircraft');
+async function loadCivilianAircraft() {
+    const container = document.getElementById('civilian-aircraft');
     try {
-        const response = await fetch(`${API_BASE}/stats/interesting?limit=10`);
+        const response = await fetch(`${API_BASE}/stats/interesting/civilian?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createInterestingAircraftItem(aircraft)).join('');
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
     } catch (error) {
-        console.error('Error loading interesting aircraft:', error);
-        container.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+        console.error('Error loading civilian aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+    }
+}
+
+async function loadPoliceAircraft() {
+    const container = document.getElementById('police-aircraft');
+    try {
+        const response = await fetch(`${API_BASE}/stats/interesting/police?limit=5`);
+        const data = await response.json();
+        
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
+    } catch (error) {
+        console.error('Error loading police aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+    }
+}
+
+async function loadMilitaryAircraft() {
+    const container = document.getElementById('military-aircraft');
+    try {
+        const response = await fetch(`${API_BASE}/stats/interesting/military?limit=5`);
+        const data = await response.json();
+        
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
+    } catch (error) {
+        console.error('Error loading military aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+    }
+}
+
+async function loadGovernmentAircraft() {
+    const container = document.getElementById('government-aircraft');
+    try {
+        const response = await fetch(`${API_BASE}/stats/interesting/government?limit=5`);
+        const data = await response.json();
+        
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
+    } catch (error) {
+        console.error('Error loading government aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -128,31 +170,40 @@ function createSimpleTableRow(aircraft, type) {
     `;
 }
 
-function createInterestingAircraftItem(aircraft) {
+function createCategoryAircraftItem(aircraft) {
     const flight = aircraft.flight?.trim() || aircraft.hex || 'Unknown';
     const registration = aircraft.registration || '-';
     const operator = aircraft.operator || '-';
     const aircraftType = aircraft.type || '-';
     const category = aircraft.category || '-';
-    const group = aircraft.group || '-';
     const seenDate = aircraft.seen ? formatDate(aircraft.seen) : '-';
+    
+    // Combine tags into a compact display
+    const tags = [aircraft.tag1, aircraft.tag2, aircraft.tag3].filter(tag => tag && tag.trim() !== '');
+    const tagsDisplay = tags.length > 0 ? 
+        tags.map(tag => `<span class="inline-block px-1.5 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">${tag}</span>`).join(' ') : 
+        '-';
+    
+    // Set color based on group
+    let dotColor = 'bg-blue-500';
+    if (aircraft.group === 'Pol') dotColor = 'bg-indigo-500';
+    else if (aircraft.group === 'Mil') dotColor = 'bg-red-500';
+    else if (aircraft.group === 'Gov') dotColor = 'bg-green-500';
     
     return `
         <tr class="hover:bg-gray-50 transition-colors duration-200">
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-3 whitespace-nowrap">
                 <div class="flex items-center">
-                    <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                    <div class="w-2 h-2 ${dotColor} rounded-full mr-2"></div>
                     <span class="text-sm font-medium text-gray-900">${flight}</span>
                 </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${registration}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${operator}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">${category}</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${group}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${seenDate}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${registration}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 max-w-32 truncate">${operator}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${category}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${tagsDisplay}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${seenDate}</td>
         </tr>
     `;
 }
