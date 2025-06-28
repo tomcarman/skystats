@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(loadAllData, 30000);
 });
 
+
 async function loadAllData() {
     updateLastUpdated();
     
@@ -46,10 +47,10 @@ async function loadFastestAircraft() {
         const response = await fetch(`${API_BASE}/stats/fastest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'speed')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'speed')).join('');
     } catch (error) {
         console.error('Error loading fastest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -59,10 +60,10 @@ async function loadSlowestAircraft() {
         const response = await fetch(`${API_BASE}/stats/slowest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'speed')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'speed')).join('');
     } catch (error) {
         console.error('Error loading slowest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -72,10 +73,10 @@ async function loadHighestAircraft() {
         const response = await fetch(`${API_BASE}/stats/highest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'altitude')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'altitude')).join('');
     } catch (error) {
         console.error('Error loading highest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -85,10 +86,10 @@ async function loadLowestAircraft() {
         const response = await fetch(`${API_BASE}/stats/lowest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'altitude')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'altitude')).join('');
     } catch (error) {
         console.error('Error loading lowest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -105,59 +106,25 @@ async function loadInterestingAircraft() {
     }
 }
 
-function createAircraftItem(aircraft, type) {
-    const flight = aircraft.flight?.trim() || aircraft.hex || 'Unknown';
+function createSimpleTableRow(aircraft, type) {
     const registration = aircraft.registration || '-';
     const aircraftType = aircraft.type || '-';
-    
-    let primaryMetric = '';
-    let secondaryMetrics = [];
-    
-    if (type === 'speed') {
-        primaryMetric = `${aircraft.ground_speed?.toFixed(1) || '-'} kt`;
-        secondaryMetrics = [
-            { label: 'IAS', value: aircraft.indicated_air_speed ? `${aircraft.indicated_air_speed} kt` : '-' },
-            { label: 'TAS', value: aircraft.true_air_speed ? `${aircraft.true_air_speed} kt` : '-' }
-        ];
-    } else if (type === 'altitude') {
-        primaryMetric = `${aircraft.barometric_altitude?.toLocaleString() || '-'} ft`;
-        secondaryMetrics = [
-            { label: 'Geometric', value: aircraft.geometric_altitude ? `${aircraft.geometric_altitude.toLocaleString()} ft` : '-' }
-        ];
-    }
-    
     const seenDate = aircraft.first_seen ? formatDate(aircraft.first_seen) : '-';
     
+    let primaryMetric = '';
+    if (type === 'speed') {
+        primaryMetric = aircraft.ground_speed ? `${aircraft.ground_speed.toFixed(1)} kt` : '-';
+    } else {
+        primaryMetric = aircraft.barometric_altitude ? `${aircraft.barometric_altitude.toLocaleString()} ft` : '-';
+    }
+    
     return `
-        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-gray-300">
-            <div class="flex justify-between items-start mb-3">
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span class="font-bold text-gray-900 text-lg">${flight}</span>
-                </div>
-                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-semibold">${aircraftType}</span>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">${type === 'speed' ? 'Ground Speed' : 'Altitude'}</span>
-                    <span class="block font-bold text-gray-900">${primaryMetric}</span>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Registration</span>
-                    <span class="block font-bold text-gray-900">${registration}</span>
-                </div>
-                ${secondaryMetrics.map(metric => `
-                    <div class="bg-gray-50 rounded-lg p-2">
-                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">${metric.label}</span>
-                        <span class="block font-bold text-gray-900">${metric.value}</span>
-                    </div>
-                `).join('')}
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">First Seen</span>
-                    <span class="block font-bold text-gray-900">${seenDate}</span>
-                </div>
-            </div>
-        </div>
+        <tr class="hover:bg-gray-50 transition-colors duration-200">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${registration}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">${primaryMetric}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${seenDate}</td>
+        </tr>
     `;
 }
 
@@ -189,6 +156,7 @@ function createInterestingAircraftItem(aircraft) {
         </tr>
     `;
 }
+
 
 function formatDate(dateString) {
     try {
