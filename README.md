@@ -2,9 +2,9 @@
     <img src="docs/logo/logo.jpg" width="500px" align="center" alt="sf metadata linter logo" />
 </div>
 </br>
-SkyStats is an application to retrieve, store, and display interesting aircraft ADS-B data received via an SDR.
-</br>
-
+<div align="center">
+    SkyStats is an application to retrieve, store, and display interesting aircraft ADS-B data received via an SDR.
+</div>
 
 ## Overview
 
