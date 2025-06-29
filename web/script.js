@@ -407,10 +407,40 @@ function showAircraftImageOverlay(event, row) {
         }
     });
     
-    // Position the overlay near the cursor
+    // Calculate position to keep overlay within viewport
     const rect = row.getBoundingClientRect();
-    overlay.style.left = `${rect.right + 10}px`;
-    overlay.style.top = `${rect.top}px`;
+    const overlayWidth = 320; // Approximate width for positioning
+    const overlayHeight = 250; // Approximate height for positioning
+    const padding = 10;
+    
+    let left = rect.right + padding;
+    let top = rect.top;
+    
+    // Check if overlay would go off the right edge
+    if (left + overlayWidth > window.innerWidth) {
+        // Position to the left of the row instead
+        left = rect.left - overlayWidth - padding;
+    }
+    
+    // Check if overlay would go off the left edge
+    if (left < 0) {
+        // Center it horizontally
+        left = (window.innerWidth - overlayWidth) / 2;
+    }
+    
+    // Check if overlay would go off the bottom
+    if (top + overlayHeight > window.innerHeight) {
+        // Adjust to fit within viewport
+        top = window.innerHeight - overlayHeight - padding;
+    }
+    
+    // Check if overlay would go off the top
+    if (top < 0) {
+        top = padding;
+    }
+    
+    overlay.style.left = `${left}px`;
+    overlay.style.top = `${top}px`;
     
     // Show the overlay
     overlay.classList.add('show');

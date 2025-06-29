@@ -44,15 +44,17 @@
         /* Aircraft image hover overlay */
         .aircraft-image-overlay {
             position: fixed;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             border-radius: 0.75rem;
-            padding: 0.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
             z-index: 100;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.2s ease-in-out;
-            max-width: 90vw;
+            max-width: min(90vw, 650px);
+            max-height: 80vh;
+            overflow: auto;
         }
         
         .aircraft-image-overlay.show {
@@ -75,8 +77,11 @@
         .aircraft-info-overlay {
             color: white;
             font-size: 0.875rem;
-            margin-bottom: 0.5rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
             text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 0.5rem;
         }
         
         .hoverable-row {
