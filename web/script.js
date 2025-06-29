@@ -190,8 +190,17 @@ function createCategoryAircraftItem(aircraft) {
     else if (aircraft.group === 'Mil') dotColor = 'bg-red-500';
     else if (aircraft.group === 'Gov') dotColor = 'bg-green-500';
     
+    // Collect image links
+    const imageLinks = [aircraft.image_link_1, aircraft.image_link_2, aircraft.image_link_3]
+        .filter(link => link && link.trim() !== '')
+        .join('|');
+    
+    // Add hoverable-row class and data attributes if images exist
+    const rowClass = imageLinks ? 'hoverable-row' : '';
+    const dataAttributes = imageLinks ? `data-images="${imageLinks}" data-registration="${registration}" data-type="${aircraftType}"` : '';
+    
     return `
-        <tr class="hover:bg-gray-50 transition-colors duration-200">
+        <tr class="hover:bg-gray-50 transition-colors duration-200 ${rowClass}" ${dataAttributes}>
             <td class="px-4 py-3 whitespace-nowrap">
                 <div class="flex items-center">
                     <div class="w-2 h-2 ${dotColor} rounded-full mr-2"></div>
@@ -349,4 +358,65 @@ function createCountryItem(country) {
 function updateLastUpdated() {
     const now = new Date();
     document.getElementById('last-updated').textContent = now.toLocaleTimeString();
+}
+
+// Aircraft image hover functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event delegation for hover events on rows with images
+    document.addEventListener('mouseenter', function(e) {
+        if (e.target.closest('.hoverable-row')) {
+            const row = e.target.closest('.hoverable-row');
+            showAircraftImageOverlay(e, row);
+        }
+    }, true);
+
+    document.addEventListener('mouseleave', function(e) {
+        if (e.target.closest('.hoverable-row')) {
+            hideAircraftImageOverlay();
+        }
+    }, true);
+});
+
+function showAircraftImageOverlay(event, row) {
+    const images = row.dataset.images;
+    const registration = row.dataset.registration;
+    const type = row.dataset.type;
+    
+    if (!images) return;
+    
+    const overlay = document.getElementById('aircraftImageOverlay');
+    const infoContainer = overlay.querySelector('.aircraft-info-overlay');
+    const imageContainer = overlay.querySelector('.aircraft-image-container');
+    
+    // Set aircraft info
+    infoContainer.textContent = `${registration} - ${type}`;
+    
+    // Clear previous images and add new ones
+    imageContainer.innerHTML = '';
+    
+    const imageLinks = images.split('|');
+    imageLinks.forEach(link => {
+        if (link && link.trim()) {
+            const img = document.createElement('img');
+            img.src = link.trim();
+            img.alt = `Aircraft ${registration}`;
+            img.onerror = function() {
+                this.style.display = 'none';
+            };
+            imageContainer.appendChild(img);
+        }
+    });
+    
+    // Position the overlay near the cursor
+    const rect = row.getBoundingClientRect();
+    overlay.style.left = `${rect.right + 10}px`;
+    overlay.style.top = `${rect.top}px`;
+    
+    // Show the overlay
+    overlay.classList.add('show');
+}
+
+function hideAircraftImageOverlay() {
+    const overlay = document.getElementById('aircraftImageOverlay');
+    overlay.classList.remove('show');
 }

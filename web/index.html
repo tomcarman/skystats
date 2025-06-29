@@ -40,8 +40,56 @@
             }
         }
     </script>
+    <style>
+        /* Aircraft image hover overlay */
+        .aircraft-image-overlay {
+            position: fixed;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: 0.75rem;
+            padding: 0.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            max-width: 90vw;
+        }
+        
+        .aircraft-image-overlay.show {
+            opacity: 1;
+        }
+        
+        .aircraft-image-container {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .aircraft-image-container img {
+            max-width: 300px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+        
+        .aircraft-info-overlay {
+            color: white;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        
+        .hoverable-row {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="font-sans bg-gray-50 min-h-screen text-gray-900 antialiased">
+    <!-- Aircraft Image Overlay -->
+    <div id="aircraftImageOverlay" class="aircraft-image-overlay">
+        <div class="aircraft-info-overlay"></div>
+        <div class="aircraft-image-container"></div>
+    </div>
     <!-- Top Navigation Bar -->
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

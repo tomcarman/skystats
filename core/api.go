@@ -253,7 +253,8 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 	
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, hex, flight, seen, seen_epoch
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
 		FROM interesting_aircraft_seen 
 		ORDER BY seen DESC 
 		LIMIT $1`
@@ -268,13 +269,14 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 	var aircraft []gin.H
 	for rows.Next() {
 		var icao, registration, operator, aircraftType, icaoType, group, category string
-		var tag1, tag2, tag3 string
+		var tag1, tag2, tag3, imageLink1, imageLink2, imageLink3 string
 		var hex, flight string
 		var seen interface{}
 		var seenEpoch float64
 
 		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType, 
-			&group, &category, &tag1, &tag2, &tag3, &hex, &flight, &seen, &seenEpoch)
+			&group, &category, &tag1, &tag2, &tag3, &imageLink1, &imageLink2, &imageLink3,
+			&hex, &flight, &seen, &seenEpoch)
 		if err != nil {
 			continue
 		}
@@ -290,6 +292,9 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 			"tag1":         tag1,
 			"tag2":         tag2,
 			"tag3":         tag3,
+			"image_link_1": imageLink1,
+			"image_link_2": imageLink2,
+			"image_link_3": imageLink3,
 			"hex":          hex,
 			"flight":       flight,
 			"seen":         seen,
@@ -305,7 +310,8 @@ func (s *APIServer) handleCivilianAircraft(c *gin.Context) {
 	
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, hex, flight, seen, seen_epoch
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
 		FROM interesting_aircraft_seen 
 		WHERE "group" = 'Civ'
 		ORDER BY seen DESC 
@@ -319,7 +325,8 @@ func (s *APIServer) handlePoliceAircraft(c *gin.Context) {
 	
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, hex, flight, seen, seen_epoch
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
 		FROM interesting_aircraft_seen 
 		WHERE "group" = 'Pol'
 		ORDER BY seen DESC 
@@ -333,7 +340,8 @@ func (s *APIServer) handleMilitaryAircraft(c *gin.Context) {
 	
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, hex, flight, seen, seen_epoch
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
 		FROM interesting_aircraft_seen 
 		WHERE "group" = 'Mil'
 		ORDER BY seen DESC 
@@ -347,7 +355,8 @@ func (s *APIServer) handleGovernmentAircraft(c *gin.Context) {
 	
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, tag1, tag2, tag3, hex, flight, seen, seen_epoch
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
 		FROM interesting_aircraft_seen 
 		WHERE "group" = 'Gov'
 		ORDER BY seen DESC 
@@ -367,13 +376,14 @@ func (s *APIServer) handleGroupedInterestingAircraft(c *gin.Context, query strin
 	var aircraft []gin.H
 	for rows.Next() {
 		var icao, registration, operator, aircraftType, icaoType, group, category string
-		var tag1, tag2, tag3 string
+		var tag1, tag2, tag3, imageLink1, imageLink2, imageLink3 string
 		var hex, flight string
 		var seen interface{}
 		var seenEpoch float64
 
 		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType, 
-			&group, &category, &tag1, &tag2, &tag3, &hex, &flight, &seen, &seenEpoch)
+			&group, &category, &tag1, &tag2, &tag3, &imageLink1, &imageLink2, &imageLink3,
+			&hex, &flight, &seen, &seenEpoch)
 		if err != nil {
 			continue
 		}
@@ -389,6 +399,9 @@ func (s *APIServer) handleGroupedInterestingAircraft(c *gin.Context, query strin
 			"tag1":         tag1,
 			"tag2":         tag2,
 			"tag3":         tag3,
+			"image_link_1": imageLink1,
+			"image_link_2": imageLink2,
+			"image_link_3": imageLink3,
 			"hex":          hex,
 			"flight":       flight,
 			"seen":         seen,
