@@ -13,18 +13,18 @@ document.addEventListener('DOMContentLoaded', function() {
 async function loadAllData() {
     updateLastUpdated();
     
-    // Load all data concurrently
+    // Load all data concurrently (matching visual order)
     await Promise.all([
         loadGeneralStats(),
+        loadRouteStats(),
+        loadMilitaryAircraft(),
+        loadGovernmentAircraft(),
+        loadPoliceAircraft(),
+        loadCivilianAircraft(),
         loadFastestAircraft(),
         loadSlowestAircraft(),
         loadHighestAircraft(),
-        loadLowestAircraft(),
-        loadCivilianAircraft(),
-        loadPoliceAircraft(),
-        loadMilitaryAircraft(),
-        loadGovernmentAircraft(),
-        loadRouteStats()
+        loadLowestAircraft()
     ]);
 }
 
