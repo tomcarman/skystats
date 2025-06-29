@@ -22,7 +22,7 @@ There are environment variables (`LATITUDE`, `LONGITUDE`, `RADIUS`) that can be 
 
 ## Screenshots
 
-
+![General](docs/screenshots/General.png)
 </br>
 ![MilGov](docs/screenshots/MilGov.png)
 </br>
