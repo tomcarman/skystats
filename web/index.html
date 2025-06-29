@@ -43,22 +43,45 @@
     <style>
         /* Aircraft image hover overlay */
         .aircraft-image-overlay {
-            position: fixed;
-            background: rgba(0, 0, 0, 0.95);
+            position: absolute;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 0.75rem;
             padding: 1rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-            z-index: 100;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
             pointer-events: none;
             opacity: 0;
-            transition: opacity 0.2s ease-in-out;
+            transform: scale(0.95);
+            transition: opacity 0.2s ease-out, transform 0.2s ease-out;
             max-width: min(90vw, 650px);
             max-height: 80vh;
             overflow: auto;
+            backdrop-filter: blur(10px);
         }
         
         .aircraft-image-overlay.show {
             opacity: 1;
+            transform: scale(1);
+        }
+        
+        /* Custom scrollbar for overlay */
+        .aircraft-image-overlay::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .aircraft-image-overlay::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        .aircraft-image-overlay::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        
+        .aircraft-image-overlay::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         
         .aircraft-image-container {
@@ -192,32 +215,6 @@
                                 <div class="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
                                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-red-600">Fastest Speed</p>
-                                    <p class="text-2xl font-bold text-red-900" id="fastest-speed">-</p>
-                                </div>
-                                <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gradient-to-r from-indigo-50 to-indigo-100 rounded-lg p-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-indigo-600">Highest Altitude</p>
-                                    <p class="text-2xl font-bold text-indigo-900" id="highest-altitude">-</p>
-                                </div>
-                                <div class="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center">
-                                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
                                     </svg>
                                 </div>
                             </div>

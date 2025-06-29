@@ -37,8 +37,6 @@ async function loadGeneralStats() {
         document.getElementById('today-aircraft').textContent = data.today_aircraft?.toLocaleString() || '-';
         document.getElementById('unique-types').textContent = data.unique_aircraft_types?.toLocaleString() || '-';
         document.getElementById('interesting-count').textContent = data.interesting_aircraft_count?.toLocaleString() || '-';
-        document.getElementById('fastest-speed').textContent = data.fastest_speed ? `${data.fastest_speed.toFixed(1)} kt` : '-';
-        document.getElementById('highest-altitude').textContent = data.highest_altitude ? `${data.highest_altitude.toLocaleString()} ft` : '-';
     } catch (error) {
         console.error('Error loading general stats:', error);
     }
@@ -407,40 +405,63 @@ function showAircraftImageOverlay(event, row) {
         }
     });
     
+    // Show overlay to get its actual dimensions
+    overlay.style.visibility = 'hidden';
+    overlay.classList.add('show');
+    
     // Calculate position to keep overlay within viewport
     const rect = row.getBoundingClientRect();
-    const overlayWidth = 320; // Approximate width for positioning
-    const overlayHeight = 250; // Approximate height for positioning
-    const padding = 10;
+    const overlayRect = overlay.getBoundingClientRect();
+    const overlayWidth = overlayRect.width || 650; // Use actual width or max-width
+    const overlayHeight = overlayRect.height || 400; // Use actual height or estimate
+    const padding = 15;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const scrollY = window.scrollY;
+    const scrollX = window.scrollX;
     
-    let left = rect.right + padding;
-    let top = rect.top;
+    // Try to position the overlay in this order of preference:
+    // 1. To the right of the row
+    // 2. To the left of the row
+    // 3. Below the row
+    // 4. Above the row
+    // 5. Centered on screen if all else fails
     
-    // Check if overlay would go off the right edge
-    if (left + overlayWidth > window.innerWidth) {
-        // Position to the left of the row instead
-        left = rect.left - overlayWidth - padding;
+    let left, top;
+    
+    // Option 1: Try right side first
+    if (rect.right + padding + overlayWidth <= viewportWidth) {
+        left = rect.right + padding + scrollX;
+        top = rect.top + scrollY - (overlayHeight - rect.height) / 2; // Center vertically relative to row
+    }
+    // Option 2: Try left side
+    else if (rect.left - padding - overlayWidth >= 0) {
+        left = rect.left - padding - overlayWidth + scrollX;
+        top = rect.top + scrollY - (overlayHeight - rect.height) / 2; // Center vertically relative to row
+    }
+    // Option 3: Try below
+    else if (rect.bottom + padding + overlayHeight <= viewportHeight) {
+        left = Math.max(padding, Math.min(rect.left + scrollX, viewportWidth - overlayWidth - padding));
+        top = rect.bottom + padding + scrollY;
+    }
+    // Option 4: Try above
+    else if (rect.top - padding - overlayHeight >= 0) {
+        left = Math.max(padding, Math.min(rect.left + scrollX, viewportWidth - overlayWidth - padding));
+        top = rect.top - padding - overlayHeight + scrollY;
+    }
+    // Option 5: Center on screen
+    else {
+        left = (viewportWidth - overlayWidth) / 2 + scrollX;
+        top = (viewportHeight - overlayHeight) / 2 + scrollY;
     }
     
-    // Check if overlay would go off the left edge
-    if (left < 0) {
-        // Center it horizontally
-        left = (window.innerWidth - overlayWidth) / 2;
-    }
-    
-    // Check if overlay would go off the bottom
-    if (top + overlayHeight > window.innerHeight) {
-        // Adjust to fit within viewport
-        top = window.innerHeight - overlayHeight - padding;
-    }
-    
-    // Check if overlay would go off the top
-    if (top < 0) {
-        top = padding;
-    }
+    // Ensure overlay stays within viewport bounds
+    left = Math.max(padding, Math.min(left, viewportWidth - overlayWidth - padding + scrollX));
+    top = Math.max(padding + scrollY, Math.min(top, viewportHeight - overlayHeight - padding + scrollY));
     
     overlay.style.left = `${left}px`;
     overlay.style.top = `${top}px`;
+    overlay.style.visibility = 'visible';
     
     // Show the overlay
     overlay.classList.add('show');
