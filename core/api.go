@@ -52,6 +52,10 @@ func (s *APIServer) Start() {
 			stats.GET("/highest", s.handleHighestAircraft)
 			stats.GET("/lowest", s.handleLowestAircraft)
 			stats.GET("/interesting", s.handleInterestingAircraft)
+			stats.GET("/interesting/civilian", s.handleCivilianAircraft)
+			stats.GET("/interesting/police", s.handlePoliceAircraft)
+			stats.GET("/interesting/military", s.handleMilitaryAircraft)
+			stats.GET("/interesting/government", s.handleGovernmentAircraft)
 			stats.GET("/general", s.handleGeneralStats)
 			stats.GET("/routes", s.handleRouteStats)
 		}
@@ -249,7 +253,8 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 	
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
-			   category, hex, flight, seen, seen_epoch
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
 		FROM interesting_aircraft_seen 
 		ORDER BY seen DESC 
 		LIMIT $1`
@@ -264,12 +269,14 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 	var aircraft []gin.H
 	for rows.Next() {
 		var icao, registration, operator, aircraftType, icaoType, group, category string
+		var tag1, tag2, tag3, imageLink1, imageLink2, imageLink3 string
 		var hex, flight string
 		var seen interface{}
 		var seenEpoch float64
 
 		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType, 
-			&group, &category, &hex, &flight, &seen, &seenEpoch)
+			&group, &category, &tag1, &tag2, &tag3, &imageLink1, &imageLink2, &imageLink3,
+			&hex, &flight, &seen, &seenEpoch)
 		if err != nil {
 			continue
 		}
@@ -282,6 +289,119 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 			"icao_type":    icaoType,
 			"group":        group,
 			"category":     category,
+			"tag1":         tag1,
+			"tag2":         tag2,
+			"tag3":         tag3,
+			"image_link_1": imageLink1,
+			"image_link_2": imageLink2,
+			"image_link_3": imageLink3,
+			"hex":          hex,
+			"flight":       flight,
+			"seen":         seen,
+			"seen_epoch":   seenEpoch,
+		})
+	}
+
+	c.JSON(http.StatusOK, aircraft)
+}
+
+func (s *APIServer) handleCivilianAircraft(c *gin.Context) {
+	limit := s.getLimit(c)
+	
+	query := `
+		SELECT icao, registration, operator, type, icao_type, "group", 
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
+		FROM interesting_aircraft_seen 
+		WHERE "group" = 'Civ'
+		ORDER BY seen DESC 
+		LIMIT $1`
+
+	s.handleGroupedInterestingAircraft(c, query, limit)
+}
+
+func (s *APIServer) handlePoliceAircraft(c *gin.Context) {
+	limit := s.getLimit(c)
+	
+	query := `
+		SELECT icao, registration, operator, type, icao_type, "group", 
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
+		FROM interesting_aircraft_seen 
+		WHERE "group" = 'Pol'
+		ORDER BY seen DESC 
+		LIMIT $1`
+
+	s.handleGroupedInterestingAircraft(c, query, limit)
+}
+
+func (s *APIServer) handleMilitaryAircraft(c *gin.Context) {
+	limit := s.getLimit(c)
+	
+	query := `
+		SELECT icao, registration, operator, type, icao_type, "group", 
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
+		FROM interesting_aircraft_seen 
+		WHERE "group" = 'Mil'
+		ORDER BY seen DESC 
+		LIMIT $1`
+
+	s.handleGroupedInterestingAircraft(c, query, limit)
+}
+
+func (s *APIServer) handleGovernmentAircraft(c *gin.Context) {
+	limit := s.getLimit(c)
+	
+	query := `
+		SELECT icao, registration, operator, type, icao_type, "group", 
+			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
+			   hex, flight, seen, seen_epoch
+		FROM interesting_aircraft_seen 
+		WHERE "group" = 'Gov'
+		ORDER BY seen DESC 
+		LIMIT $1`
+
+	s.handleGroupedInterestingAircraft(c, query, limit)
+}
+
+func (s *APIServer) handleGroupedInterestingAircraft(c *gin.Context, query string, limit int) {
+	rows, err := s.pg.db.Query(context.Background(), query, limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var aircraft []gin.H
+	for rows.Next() {
+		var icao, registration, operator, aircraftType, icaoType, group, category string
+		var tag1, tag2, tag3, imageLink1, imageLink2, imageLink3 string
+		var hex, flight string
+		var seen interface{}
+		var seenEpoch float64
+
+		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType, 
+			&group, &category, &tag1, &tag2, &tag3, &imageLink1, &imageLink2, &imageLink3,
+			&hex, &flight, &seen, &seenEpoch)
+		if err != nil {
+			continue
+		}
+
+		aircraft = append(aircraft, gin.H{
+			"icao":         icao,
+			"registration": registration,
+			"operator":     operator,
+			"type":         aircraftType,
+			"icao_type":    icaoType,
+			"group":        group,
+			"category":     category,
+			"tag1":         tag1,
+			"tag2":         tag2,
+			"tag3":         tag3,
+			"image_link_1": imageLink1,
+			"image_link_2": imageLink2,
+			"image_link_3": imageLink3,
 			"hex":          hex,
 			"flight":       flight,
 			"seen":         seen,

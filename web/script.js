@@ -9,18 +9,22 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(loadAllData, 30000);
 });
 
+
 async function loadAllData() {
     updateLastUpdated();
     
-    // Load all data concurrently
+    // Load all data concurrently (matching visual order)
     await Promise.all([
         loadGeneralStats(),
+        loadRouteStats(),
+        loadMilitaryAircraft(),
+        loadGovernmentAircraft(),
+        loadPoliceAircraft(),
+        loadCivilianAircraft(),
         loadFastestAircraft(),
         loadSlowestAircraft(),
         loadHighestAircraft(),
-        loadLowestAircraft(),
-        loadInterestingAircraft(),
-        loadRouteStats()
+        loadLowestAircraft()
     ]);
 }
 
@@ -46,10 +50,10 @@ async function loadFastestAircraft() {
         const response = await fetch(`${API_BASE}/stats/fastest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'speed')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'speed')).join('');
     } catch (error) {
         console.error('Error loading fastest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -59,10 +63,10 @@ async function loadSlowestAircraft() {
         const response = await fetch(`${API_BASE}/stats/slowest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'speed')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'speed')).join('');
     } catch (error) {
         console.error('Error loading slowest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -72,10 +76,10 @@ async function loadHighestAircraft() {
         const response = await fetch(`${API_BASE}/stats/highest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'altitude')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'altitude')).join('');
     } catch (error) {
         console.error('Error loading highest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
@@ -85,110 +89,134 @@ async function loadLowestAircraft() {
         const response = await fetch(`${API_BASE}/stats/lowest?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createAircraftItem(aircraft, 'altitude')).join('');
+        container.innerHTML = data.map(aircraft => createSimpleTableRow(aircraft, 'altitude')).join('');
     } catch (error) {
         console.error('Error loading lowest aircraft:', error);
-        container.innerHTML = '<div class="text-center py-8 text-red-600 bg-red-50 border border-red-200 rounded-lg">Error loading data</div>';
+        container.innerHTML = '<tr><td colspan="4" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
-async function loadInterestingAircraft() {
-    const container = document.getElementById('interesting-aircraft');
+async function loadCivilianAircraft() {
+    const container = document.getElementById('civilian-aircraft');
     try {
-        const response = await fetch(`${API_BASE}/stats/interesting?limit=10`);
+        const response = await fetch(`${API_BASE}/stats/interesting/civilian?limit=5`);
         const data = await response.json();
         
-        container.innerHTML = data.map(aircraft => createInterestingAircraftItem(aircraft)).join('');
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
     } catch (error) {
-        console.error('Error loading interesting aircraft:', error);
-        container.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+        console.error('Error loading civilian aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
     }
 }
 
-function createAircraftItem(aircraft, type) {
-    const flight = aircraft.flight?.trim() || aircraft.hex || 'Unknown';
+async function loadPoliceAircraft() {
+    const container = document.getElementById('police-aircraft');
+    try {
+        const response = await fetch(`${API_BASE}/stats/interesting/police?limit=5`);
+        const data = await response.json();
+        
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
+    } catch (error) {
+        console.error('Error loading police aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+    }
+}
+
+async function loadMilitaryAircraft() {
+    const container = document.getElementById('military-aircraft');
+    try {
+        const response = await fetch(`${API_BASE}/stats/interesting/military?limit=5`);
+        const data = await response.json();
+        
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
+    } catch (error) {
+        console.error('Error loading military aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+    }
+}
+
+async function loadGovernmentAircraft() {
+    const container = document.getElementById('government-aircraft');
+    try {
+        const response = await fetch(`${API_BASE}/stats/interesting/government?limit=5`);
+        const data = await response.json();
+        
+        container.innerHTML = data.map(aircraft => createCategoryAircraftItem(aircraft)).join('');
+    } catch (error) {
+        console.error('Error loading government aircraft:', error);
+        container.innerHTML = '<tr><td colspan="7" class="px-4 py-4 text-center text-red-600 bg-red-50">Error loading data</td></tr>';
+    }
+}
+
+function createSimpleTableRow(aircraft, type) {
     const registration = aircraft.registration || '-';
     const aircraftType = aircraft.type || '-';
-    
-    let primaryMetric = '';
-    let secondaryMetrics = [];
-    
-    if (type === 'speed') {
-        primaryMetric = `${aircraft.ground_speed?.toFixed(1) || '-'} kt`;
-        secondaryMetrics = [
-            { label: 'IAS', value: aircraft.indicated_air_speed ? `${aircraft.indicated_air_speed} kt` : '-' },
-            { label: 'TAS', value: aircraft.true_air_speed ? `${aircraft.true_air_speed} kt` : '-' }
-        ];
-    } else if (type === 'altitude') {
-        primaryMetric = `${aircraft.barometric_altitude?.toLocaleString() || '-'} ft`;
-        secondaryMetrics = [
-            { label: 'Geometric', value: aircraft.geometric_altitude ? `${aircraft.geometric_altitude.toLocaleString()} ft` : '-' }
-        ];
-    }
-    
     const seenDate = aircraft.first_seen ? formatDate(aircraft.first_seen) : '-';
     
+    let primaryMetric = '';
+    if (type === 'speed') {
+        primaryMetric = aircraft.ground_speed ? `${aircraft.ground_speed.toFixed(1)} kt` : '-';
+    } else {
+        primaryMetric = aircraft.barometric_altitude ? `${aircraft.barometric_altitude.toLocaleString()} ft` : '-';
+    }
+    
     return `
-        <div class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 hover:border-gray-300">
-            <div class="flex justify-between items-start mb-3">
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span class="font-bold text-gray-900 text-lg">${flight}</span>
-                </div>
-                <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm font-semibold">${aircraftType}</span>
-            </div>
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">${type === 'speed' ? 'Ground Speed' : 'Altitude'}</span>
-                    <span class="block font-bold text-gray-900">${primaryMetric}</span>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Registration</span>
-                    <span class="block font-bold text-gray-900">${registration}</span>
-                </div>
-                ${secondaryMetrics.map(metric => `
-                    <div class="bg-gray-50 rounded-lg p-2">
-                        <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">${metric.label}</span>
-                        <span class="block font-bold text-gray-900">${metric.value}</span>
-                    </div>
-                `).join('')}
-                <div class="bg-gray-50 rounded-lg p-2">
-                    <span class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">First Seen</span>
-                    <span class="block font-bold text-gray-900">${seenDate}</span>
-                </div>
-            </div>
-        </div>
+        <tr class="hover:bg-gray-50 transition-colors duration-200">
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${registration}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">${primaryMetric}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${seenDate}</td>
+        </tr>
     `;
 }
 
-function createInterestingAircraftItem(aircraft) {
+function createCategoryAircraftItem(aircraft) {
     const flight = aircraft.flight?.trim() || aircraft.hex || 'Unknown';
     const registration = aircraft.registration || '-';
     const operator = aircraft.operator || '-';
     const aircraftType = aircraft.type || '-';
     const category = aircraft.category || '-';
-    const group = aircraft.group || '-';
     const seenDate = aircraft.seen ? formatDate(aircraft.seen) : '-';
     
+    // Combine tags into a compact display
+    const tags = [aircraft.tag1, aircraft.tag2, aircraft.tag3].filter(tag => tag && tag.trim() !== '');
+    const tagsDisplay = tags.length > 0 ? 
+        tags.map(tag => `<span class="inline-block px-1.5 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">${tag}</span>`).join(' ') : 
+        '-';
+    
+    // Set color based on group
+    let dotColor = 'bg-blue-500';
+    if (aircraft.group === 'Pol') dotColor = 'bg-indigo-500';
+    else if (aircraft.group === 'Mil') dotColor = 'bg-red-500';
+    else if (aircraft.group === 'Gov') dotColor = 'bg-green-500';
+    
+    // Collect image links
+    const imageLinks = [aircraft.image_link_1, aircraft.image_link_2, aircraft.image_link_3]
+        .filter(link => link && link.trim() !== '')
+        .join('|');
+    
+    // Add hoverable-row class and data attributes if images exist
+    const rowClass = imageLinks ? 'hoverable-row' : '';
+    const dataAttributes = imageLinks ? `data-images="${imageLinks}" data-registration="${registration}" data-type="${aircraftType}"` : '';
+    
     return `
-        <tr class="hover:bg-gray-50 transition-colors duration-200">
-            <td class="px-6 py-4 whitespace-nowrap">
+        <tr class="hover:bg-gray-50 transition-colors duration-200 ${rowClass}" ${dataAttributes}>
+            <td class="px-4 py-3 whitespace-nowrap">
                 <div class="flex items-center">
-                    <div class="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                    <div class="w-2 h-2 ${dotColor} rounded-full mr-2"></div>
                     <span class="text-sm font-medium text-gray-900">${flight}</span>
                 </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${registration}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${operator}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">${category}</span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${group}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${seenDate}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${registration}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 max-w-32 truncate">${operator}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${aircraftType}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${category}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">${tagsDisplay}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${seenDate}</td>
         </tr>
     `;
 }
+
 
 function formatDate(dateString) {
     try {
@@ -330,4 +358,95 @@ function createCountryItem(country) {
 function updateLastUpdated() {
     const now = new Date();
     document.getElementById('last-updated').textContent = now.toLocaleTimeString();
+}
+
+// Aircraft image hover functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event delegation for hover events on rows with images
+    document.addEventListener('mouseenter', function(e) {
+        if (e.target.closest('.hoverable-row')) {
+            const row = e.target.closest('.hoverable-row');
+            showAircraftImageOverlay(e, row);
+        }
+    }, true);
+
+    document.addEventListener('mouseleave', function(e) {
+        if (e.target.closest('.hoverable-row')) {
+            hideAircraftImageOverlay();
+        }
+    }, true);
+});
+
+function showAircraftImageOverlay(event, row) {
+    const images = row.dataset.images;
+    const registration = row.dataset.registration;
+    const type = row.dataset.type;
+    
+    if (!images) return;
+    
+    const overlay = document.getElementById('aircraftImageOverlay');
+    const infoContainer = overlay.querySelector('.aircraft-info-overlay');
+    const imageContainer = overlay.querySelector('.aircraft-image-container');
+    
+    // Set aircraft info
+    infoContainer.textContent = `${registration} - ${type}`;
+    
+    // Clear previous images and add new ones
+    imageContainer.innerHTML = '';
+    
+    const imageLinks = images.split('|');
+    imageLinks.forEach(link => {
+        if (link && link.trim()) {
+            const img = document.createElement('img');
+            img.src = link.trim();
+            img.alt = `Aircraft ${registration}`;
+            img.onerror = function() {
+                this.style.display = 'none';
+            };
+            imageContainer.appendChild(img);
+        }
+    });
+    
+    // Calculate position to keep overlay within viewport
+    const rect = row.getBoundingClientRect();
+    const overlayWidth = 320; // Approximate width for positioning
+    const overlayHeight = 250; // Approximate height for positioning
+    const padding = 10;
+    
+    let left = rect.right + padding;
+    let top = rect.top;
+    
+    // Check if overlay would go off the right edge
+    if (left + overlayWidth > window.innerWidth) {
+        // Position to the left of the row instead
+        left = rect.left - overlayWidth - padding;
+    }
+    
+    // Check if overlay would go off the left edge
+    if (left < 0) {
+        // Center it horizontally
+        left = (window.innerWidth - overlayWidth) / 2;
+    }
+    
+    // Check if overlay would go off the bottom
+    if (top + overlayHeight > window.innerHeight) {
+        // Adjust to fit within viewport
+        top = window.innerHeight - overlayHeight - padding;
+    }
+    
+    // Check if overlay would go off the top
+    if (top < 0) {
+        top = padding;
+    }
+    
+    overlay.style.left = `${left}px`;
+    overlay.style.top = `${top}px`;
+    
+    // Show the overlay
+    overlay.classList.add('show');
+}
+
+function hideAircraftImageOverlay() {
+    const overlay = document.getElementById('aircraftImageOverlay');
+    overlay.classList.remove('show');
 }
