@@ -37,7 +37,6 @@ func updateRoutes(pg *postgres) {
 		}
 
 		if route.Response.Flightroute.Callsign == "" {
-			// fmt.Printf("No route found for %s", aircraft.Flight)
 			existing = append(existing, aircraft)
 			continue
 		}
@@ -167,8 +166,6 @@ func getRoute(aircraft Aircraft) (*RouteInfo, error) {
 	url := os.Getenv("ADSB_DB_CALLSIGN_ENDPOINT")
 	url += aircraft.Flight
 
-	// fmt.Println("\nGetting route for: ", url)
-
 	response, err := http.Get(url)
 
 	if err != nil {
@@ -194,8 +191,6 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 	for _, a := range aircraftToProcess {
 		callsignValues = append(callsignValues, a.Flight)
 	}
-
-	// fmt.Println("Callsigns to check: ", callsignValues)
 
 	existingRoutes := make(map[string]*Aircraft)
 
@@ -234,9 +229,6 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 			new = append(new, a)
 		}
 	}
-
-	// fmt.Println("Existing routes: ", len(existing))
-	// fmt.Println("New routes: ", len(new))
 
 	return existing, new
 

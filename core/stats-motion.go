@@ -36,8 +36,6 @@ func updateLowestAircraft(pg *postgres, aircrafts []Aircraft) {
 		return
 	}
 
-	// fmt.Println("updateLowestAircraft() - Aircraft to process: ", len(aircraftToProcess))
-
 	lowestAircraftCeiling := getLowestAircraftCeiling(pg)
 
 	sort.Slice(aircraftToProcess, func(i, j int) bool {
@@ -125,8 +123,6 @@ func updateHighestAircraft(pg *postgres, aircrafts []Aircraft) {
 		return
 	}
 
-	// fmt.Println("updateHighestAircraft() - Aircraft to process: ", len(aircraftToProcess))
-
 	highestAircraftFloor := getHighestAircraftFloor(pg)
 
 	sort.Slice(aircraftToProcess, func(i, j int) bool {
@@ -210,8 +206,6 @@ func updateSlowestAircraft(pg *postgres, aircrafts []Aircraft) {
 	if len(aircraftToProcess) == 0 {
 		return
 	}
-
-	// fmt.Println("updateSlowestAircraft() - Aircraft to process: ", len(aircraftToProcess))
 
 	slowestAircraftCeiling := getSlowestAircraftCeiling(pg)
 
@@ -303,8 +297,6 @@ func updateFastestAircraft(pg *postgres, aircrafts []Aircraft) {
 	if len(aircraftToProcess) == 0 {
 		return
 	}
-
-	// fmt.Println("updateFastestAircraft() - Aircraft to process: ", len(aircraftToProcess))
 
 	fastestAircraftFloor := getFastestAircraftFloor(pg)
 

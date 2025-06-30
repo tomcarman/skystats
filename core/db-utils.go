@@ -8,7 +8,6 @@ import (
 )
 
 func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
-	// fmt.Println("Entered MarkProcessed() for colName: ", colName)
 
 	batch := &pgx.Batch{}
 
@@ -29,7 +28,6 @@ func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
 }
 
 func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrder string, maxRows int) {
-	// fmt.Println("Entered DeleteExcessRows() for tableName: ", tableName, " and metricName: ", metricName)
 
 	queryCount := `SELECT COUNT(*) FROM ` + tableName
 

@@ -28,7 +28,6 @@ func NewAPIServer(pg *postgres) *APIServer {
 func (s *APIServer) Start() {
 	r := gin.Default()
 
-	// CORS middleware
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -70,7 +69,7 @@ func (s *APIServer) Start() {
 
 func (s *APIServer) handleFastestAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT hex, flight, registration, type, first_seen, last_seen, 
 			   ground_speed, indicated_air_speed, true_air_speed
@@ -92,7 +91,7 @@ func (s *APIServer) handleFastestAircraft(c *gin.Context) {
 		var groundSpeed float64
 		var indicatedAirSpeed, trueAirSpeed int
 
-		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen, 
+		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen,
 			&lastSeen, &groundSpeed, &indicatedAirSpeed, &trueAirSpeed)
 		if err != nil {
 			continue
@@ -116,7 +115,7 @@ func (s *APIServer) handleFastestAircraft(c *gin.Context) {
 
 func (s *APIServer) handleSlowestAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT hex, flight, registration, type, first_seen, last_seen, 
 			   ground_speed, indicated_air_speed, true_air_speed
@@ -138,7 +137,7 @@ func (s *APIServer) handleSlowestAircraft(c *gin.Context) {
 		var groundSpeed float64
 		var indicatedAirSpeed, trueAirSpeed int
 
-		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen, 
+		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen,
 			&lastSeen, &groundSpeed, &indicatedAirSpeed, &trueAirSpeed)
 		if err != nil {
 			continue
@@ -162,7 +161,7 @@ func (s *APIServer) handleSlowestAircraft(c *gin.Context) {
 
 func (s *APIServer) handleHighestAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT hex, flight, registration, type, first_seen, last_seen, 
 			   barometric_altitude, geometric_altitude
@@ -183,21 +182,21 @@ func (s *APIServer) handleHighestAircraft(c *gin.Context) {
 		var firstSeen, lastSeen interface{}
 		var barometricAltitude, geometricAltitude int
 
-		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen, 
+		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen,
 			&lastSeen, &barometricAltitude, &geometricAltitude)
 		if err != nil {
 			continue
 		}
 
 		aircraft = append(aircraft, gin.H{
-			"hex":                  hex,
-			"flight":               flight,
-			"registration":         registration,
-			"type":                 aircraftType,
-			"first_seen":           firstSeen,
-			"last_seen":            lastSeen,
-			"barometric_altitude":  barometricAltitude,
-			"geometric_altitude":   geometricAltitude,
+			"hex":                 hex,
+			"flight":              flight,
+			"registration":        registration,
+			"type":                aircraftType,
+			"first_seen":          firstSeen,
+			"last_seen":           lastSeen,
+			"barometric_altitude": barometricAltitude,
+			"geometric_altitude":  geometricAltitude,
 		})
 	}
 
@@ -206,7 +205,7 @@ func (s *APIServer) handleHighestAircraft(c *gin.Context) {
 
 func (s *APIServer) handleLowestAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT hex, flight, registration, type, first_seen, last_seen, 
 			   barometric_altitude, geometric_altitude
@@ -227,21 +226,21 @@ func (s *APIServer) handleLowestAircraft(c *gin.Context) {
 		var firstSeen, lastSeen interface{}
 		var barometricAltitude, geometricAltitude int
 
-		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen, 
+		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen,
 			&lastSeen, &barometricAltitude, &geometricAltitude)
 		if err != nil {
 			continue
 		}
 
 		aircraft = append(aircraft, gin.H{
-			"hex":                  hex,
-			"flight":               flight,
-			"registration":         registration,
-			"type":                 aircraftType,
-			"first_seen":           firstSeen,
-			"last_seen":            lastSeen,
-			"barometric_altitude":  barometricAltitude,
-			"geometric_altitude":   geometricAltitude,
+			"hex":                 hex,
+			"flight":              flight,
+			"registration":        registration,
+			"type":                aircraftType,
+			"first_seen":          firstSeen,
+			"last_seen":           lastSeen,
+			"barometric_altitude": barometricAltitude,
+			"geometric_altitude":  geometricAltitude,
 		})
 	}
 
@@ -250,7 +249,7 @@ func (s *APIServer) handleLowestAircraft(c *gin.Context) {
 
 func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
 			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
@@ -274,7 +273,7 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 		var seen interface{}
 		var seenEpoch float64
 
-		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType, 
+		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType,
 			&group, &category, &tag1, &tag2, &tag3, &imageLink1, &imageLink2, &imageLink3,
 			&hex, &flight, &seen, &seenEpoch)
 		if err != nil {
@@ -307,7 +306,7 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 
 func (s *APIServer) handleCivilianAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
 			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
@@ -322,7 +321,7 @@ func (s *APIServer) handleCivilianAircraft(c *gin.Context) {
 
 func (s *APIServer) handlePoliceAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
 			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
@@ -337,7 +336,7 @@ func (s *APIServer) handlePoliceAircraft(c *gin.Context) {
 
 func (s *APIServer) handleMilitaryAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
 			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
@@ -352,7 +351,7 @@ func (s *APIServer) handleMilitaryAircraft(c *gin.Context) {
 
 func (s *APIServer) handleGovernmentAircraft(c *gin.Context) {
 	limit := s.getLimit(c)
-	
+
 	query := `
 		SELECT icao, registration, operator, type, icao_type, "group", 
 			   category, tag1, tag2, tag3, image_link_1, image_link_2, image_link_3,
@@ -381,7 +380,7 @@ func (s *APIServer) handleGroupedInterestingAircraft(c *gin.Context, query strin
 		var seen interface{}
 		var seenEpoch float64
 
-		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType, 
+		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType,
 			&group, &category, &tag1, &tag2, &tag3, &imageLink1, &imageLink2, &imageLink3,
 			&hex, &flight, &seen, &seenEpoch)
 		if err != nil {
@@ -424,7 +423,7 @@ func (s *APIServer) handleGeneralStats(c *gin.Context) {
 
 	// Today's aircraft count
 	var todayAircraft int
-	err = s.pg.db.QueryRow(context.Background(), 
+	err = s.pg.db.QueryRow(context.Background(),
 		"SELECT COUNT(*) FROM aircraft_data WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayAircraft)
 	if err == nil {
 		stats["today_aircraft"] = todayAircraft
@@ -432,7 +431,7 @@ func (s *APIServer) handleGeneralStats(c *gin.Context) {
 
 	// Unique aircraft types
 	var uniqueTypes int
-	err = s.pg.db.QueryRow(context.Background(), 
+	err = s.pg.db.QueryRow(context.Background(),
 		"SELECT COUNT(DISTINCT t) FROM aircraft_data WHERE t IS NOT NULL AND t != ''").Scan(&uniqueTypes)
 	if err == nil {
 		stats["unique_aircraft_types"] = uniqueTypes
@@ -447,7 +446,7 @@ func (s *APIServer) handleGeneralStats(c *gin.Context) {
 
 	// Fastest recorded speed
 	var fastestSpeed float64
-	err = s.pg.db.QueryRow(context.Background(), 
+	err = s.pg.db.QueryRow(context.Background(),
 		"SELECT MAX(ground_speed) FROM fastest_aircraft").Scan(&fastestSpeed)
 	if err == nil {
 		stats["fastest_speed"] = fastestSpeed
@@ -455,7 +454,7 @@ func (s *APIServer) handleGeneralStats(c *gin.Context) {
 
 	// Highest altitude
 	var highestAltitude int
-	err = s.pg.db.QueryRow(context.Background(), 
+	err = s.pg.db.QueryRow(context.Background(),
 		"SELECT MAX(barometric_altitude) FROM highest_aircraft").Scan(&highestAltitude)
 	if err == nil {
 		stats["highest_altitude"] = highestAltitude
@@ -476,15 +475,15 @@ func (s *APIServer) handleRouteStats(c *gin.Context) {
 
 func (s *APIServer) getLimit(c *gin.Context) int {
 	limitStr := c.DefaultQuery("limit", "10")
-	
+
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
 		return 10
 	}
-	
+
 	if limit > 100 {
 		return 100 // max limit
 	}
-	
+
 	return limit
 }
