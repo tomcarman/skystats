@@ -48,7 +48,6 @@ func main() {
 	log.Print("daemon started")
 
 	url := GetConnectionUrl()
-	// url := "postgres://" + getUser() + ":" + getPassword() + "@" + getHost() + ":" + getPort() + "/" + getDbName()
 
 	pg, err := NewPG(context.Background(), url)
 	if err != nil {
@@ -99,25 +98,6 @@ func main() {
 	}
 
 }
-
-// func getDbName() string {
-// 	return os.Getenv("DB_NAME")
-// }
-
-// func getUser() string {
-// 	return os.Getenv("DB_USER")
-// }
-
-// func getPassword() string {
-// 	return os.Getenv("DB_PASSWORD")
-// }
-
-// func getHost() string {
-// 	return os.Getenv("DB_HOST")
-// }
-// func getPort() string {
-// 	return os.Getenv("DB_PORT")
-// }
 
 func getPprofHost() string {
 	return os.Getenv("PPROF_HOST")
