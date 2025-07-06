@@ -84,7 +84,7 @@ func (s *APIServer) handleFastestAircraft(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var aircraft []gin.H
+	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
 		var firstSeen, lastSeen interface{}
@@ -130,7 +130,7 @@ func (s *APIServer) handleSlowestAircraft(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var aircraft []gin.H
+	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
 		var firstSeen, lastSeen interface{}
@@ -176,7 +176,7 @@ func (s *APIServer) handleHighestAircraft(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var aircraft []gin.H
+	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
 		var firstSeen, lastSeen interface{}
@@ -220,7 +220,7 @@ func (s *APIServer) handleLowestAircraft(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var aircraft []gin.H
+	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
 		var firstSeen, lastSeen interface{}
@@ -265,10 +265,11 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	var aircraft []gin.H
+	aircraft := []gin.H{}
 	for rows.Next() {
 		var icao, registration, operator, aircraftType, icaoType, group, category string
-		var tag1, tag2, tag3, imageLink1, imageLink2, imageLink3 string
+		var tag1, tag2, tag3 string
+		var imageLink1, imageLink2, imageLink3 *string // Use pointers for nullable fields
 		var hex, flight string
 		var seen interface{}
 		var seenEpoch float64
@@ -278,6 +279,18 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 			&hex, &flight, &seen, &seenEpoch)
 		if err != nil {
 			continue
+		}
+
+		// Convert pointers to values for JSON output
+		var imgLink1, imgLink2, imgLink3 string
+		if imageLink1 != nil {
+			imgLink1 = *imageLink1
+		}
+		if imageLink2 != nil {
+			imgLink2 = *imageLink2
+		}
+		if imageLink3 != nil {
+			imgLink3 = *imageLink3
 		}
 
 		aircraft = append(aircraft, gin.H{
@@ -291,9 +304,9 @@ func (s *APIServer) handleInterestingAircraft(c *gin.Context) {
 			"tag1":         tag1,
 			"tag2":         tag2,
 			"tag3":         tag3,
-			"image_link_1": imageLink1,
-			"image_link_2": imageLink2,
-			"image_link_3": imageLink3,
+			"image_link_1": imgLink1,
+			"image_link_2": imgLink2,
+			"image_link_3": imgLink3,
 			"hex":          hex,
 			"flight":       flight,
 			"seen":         seen,
@@ -372,10 +385,11 @@ func (s *APIServer) handleGroupedInterestingAircraft(c *gin.Context, query strin
 	}
 	defer rows.Close()
 
-	var aircraft []gin.H
+	aircraft := []gin.H{}
 	for rows.Next() {
 		var icao, registration, operator, aircraftType, icaoType, group, category string
-		var tag1, tag2, tag3, imageLink1, imageLink2, imageLink3 string
+		var tag1, tag2, tag3 string
+		var imageLink1, imageLink2, imageLink3 *string // Use pointers for nullable fields
 		var hex, flight string
 		var seen interface{}
 		var seenEpoch float64
