@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"time"
 
@@ -15,39 +13,38 @@ import (
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	// Load .env file if it exists (optional for Docker)
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using environment variables")
 	}
 
-	go func() {
-		pprofUrl := getPprofHost() + ":" + getPprofPort()
-		log.Println(http.ListenAndServe(pprofUrl, nil))
-	}()
+	// Skip daemonization if running in Docker
+	if os.Getenv("DOCKER_ENV") != "true" {
+		cntxt := &daemon.Context{
+			PidFileName: "skystats.pid",
+			PidFilePerm: 0644,
+			LogFileName: "skystats.log",
+			LogFilePerm: 0640,
+			WorkDir:     "./",
+			Umask:       027,
+		}
 
-	cntxt := &daemon.Context{
-		PidFileName: "skystats.pid",
-		PidFilePerm: 0644,
-		LogFileName: "skystats.log",
-		LogFilePerm: 0640,
-		WorkDir:     "./",
-		Umask:       027,
+		d, err := cntxt.Reborn()
+		if err != nil {
+			fmt.Println("Unable to run: ", err)
+			log.Fatal("Unable to run: ", err)
+		}
+		if d != nil {
+			return
+		}
+		defer cntxt.Release()
 	}
-
-	d, err := cntxt.Reborn()
-	if err != nil {
-		fmt.Println("Unable to run: ", err)
-		log.Fatal("Unable to run: ", err)
-	}
-	if d != nil {
-		return
-	}
-	defer cntxt.Release()
 
 	log.Print("- - - - - - - - - - - - - - -")
 	log.Print("daemon started")
 
 	url := GetConnectionUrl()
+	log.Printf("Connecting to database: %s", url)
 
 	pg, err := NewPG(context.Background(), url)
 	if err != nil {
@@ -97,12 +94,4 @@ func main() {
 		}
 	}
 
-}
-
-func getPprofHost() string {
-	return os.Getenv("PPROF_HOST")
-}
-
-func getPprofPort() string {
-	return os.Getenv("PPROF_PORT")
 }

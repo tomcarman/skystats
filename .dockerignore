@@ -1,0 +1,24 @@
+# Environment files (only for local development)
+.env
+.env.*
+core/.env
+core/.env.*
+
+# Logs and runtime files
+*.log
+*.pid
+
+# Git files
+.git
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

@@ -1,0 +1,48 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - skystats-db-docker
+    environment:
+      # Docker environment flag (used to skip daemonising the app when in Docker)
+      - DOCKER_ENV=true
+      # ADSB
+      - ADSB_HOST=
+      - ADSB_PORT=
+      # PostgreSQL
+      - DB_HOST=skystats-db-docker
+      - DB_PORT=
+      - DB_USER=
+      - DB_PASSWORD=
+      - DB_NAME=skystats_db
+      # ADSB DB API
+      - ADSB_DB_AIRCRAFT_ENDPOINT=https://api.adsbdb.com/v0/aircraft/
+      - ADSB_DB_CALLSIGN_ENDPOINT=https://api.adsbdb.com/v0/callsign/
+      # App
+      - APP_PORT=8080
+      - LATITUDE=
+      - LONGITUDE=
+      - RADIUS=
+      
+  skystats-db-docker:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=
+      - POSTGRES_PASSWORD=
+      - POSTGRES_DB=skystats_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d skystats_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  
+    
+
