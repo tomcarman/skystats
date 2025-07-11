@@ -29,7 +29,7 @@ services:
   db-init:
       image: python:3.11-slim
       depends_on:
-        skystats-db-docker
+        - skystats-db-docker
       environment:
         - DB_HOST=skystats-db-docker
         - DB_PORT=
