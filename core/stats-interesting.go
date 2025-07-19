@@ -25,7 +25,7 @@ func updateInterestingSeen(pg *postgres) {
 
 	for _, aircraft := range aircrafts {
 		aircraftsMap[strings.ToUpper(aircraft.Hex)] = aircraft
-		aircraftsHex = append(aircraftsHex, aircraft.Hex)
+		aircraftsHex = append(aircraftsHex, strings.ToUpper(aircraft.Hex))
 	}
 
 	query := `
