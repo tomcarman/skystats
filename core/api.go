@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -131,13 +132,47 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 	}
 
 	query := `
-		SELECT hex, flight, r, t, track, first_seen, last_seen, 
-		last_seen_lat, last_seen_lon, last_seen_distance
-		FROM aircraft_data
-		WHERE last_seen >= NOW() - INTERVAL '60 seconds'
-		AND last_seen_distance <= $1
-		ORDER BY last_seen_distance ASC
-		LIMIT 5`
+		SELECT 
+			ad.hex, 
+			ad.flight, 
+			ad.r, 
+			ad.t, 
+			ad.track, 
+			ad.first_seen, 
+			ad.last_seen,
+			ad.last_seen_lat, 
+			ad.last_seen_lon, 
+			ad.last_seen_distance,
+			-- Registration data
+			reg.type,
+			reg.icao_type,
+			reg.manufacturer,
+			reg.registered_owner_country_name,
+			reg.registered_owner_country_iso_name,
+			reg.registered_owner_operator_flag_code,
+			reg.registered_owner,
+			reg.url_photo,
+			reg.url_photo_thumbnail,
+			-- Route data
+			rt.airline_name,
+			rt.airline_icao,
+			rt.origin_country_name,
+			rt.origin_country_iso_name,
+			rt.origin_iata_code,
+			rt.origin_icao_code,
+			rt.origin_name,
+			rt.destination_country_name,
+			rt.destination_country_iso_name,
+			rt.destination_iata_code,
+			rt.destination_icao_code,
+			rt.destination_name
+		FROM aircraft_data ad
+		LEFT JOIN registration_data reg ON ad.hex = reg.mode_s
+		LEFT JOIN route_data rt ON ad.flight = rt.route_callsign
+		WHERE ad.last_seen >= NOW() - INTERVAL '60 seconds'
+			AND ad.last_seen_distance <= $1
+		ORDER BY ad.last_seen_distance ASC
+		LIMIT 5;`
 
 	rows, err := s.pg.db.Query(context.Background(), query, radius)
 	if err != nil {
@@ -148,18 +183,39 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 
 	aircraft := []gin.H{}
 	for rows.Next() {
+		// Core data
 		var hex, flight, registration, aircraftType string
-		var firstSeen, lastSeen interface{}
+		var firstSeen, lastSeen *time.Time
 		var track, lastSeenLat, lastSeenLon, lastSeenDistance float64
 
-		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &track, 
-			&firstSeen, &lastSeen, &lastSeenLat, &lastSeenLon, &lastSeenDistance)
+		// Registration data
+		var regType, icaoType, manufacturer, registeredOwnerCountryName, registeredOwnerCountryISO, registeredOwnerOperatorFlag, registeredOwner *string
+		var urlPhoto, urlPhotoThumbnail *string
+
+		// Route data
+		var airlineName, airlineICAO, originCountryName, originCountryISOName, originIATACode, originICAOCode, originName *string
+		var destinationCountryName, destinationCountryISOName, destinationIATACode, destinationICAOCode, destinationName *string
+
+		err := rows.Scan(
+			// Core data
+			&hex, &flight, &registration, &aircraftType, &track,
+			&firstSeen, &lastSeen, &lastSeenLat, &lastSeenLon, &lastSeenDistance,
+
+			// Registration data
+			&regType, &icaoType, &manufacturer, &registeredOwnerCountryName, &registeredOwnerCountryISO,
+			&registeredOwnerOperatorFlag, &registeredOwner, &urlPhoto, &urlPhotoThumbnail,
+
+			// Route data
+			&airlineName, &airlineICAO, &originCountryName, &originCountryISOName, &originIATACode,
+			&originICAOCode, &originName, &destinationCountryName, &destinationCountryISOName,
+			&destinationIATACode, &destinationICAOCode, &destinationName)
 		if err != nil {
 			fmt.Println("Error in getAboveStats() ", err)
 			continue
 		}
 
 		aircraft = append(aircraft, gin.H{
+			// Core data
 			"hex":                hex,
 			"flight":             flight,
 			"registration":       registration,
@@ -170,6 +226,29 @@ func (s *APIServer) getAboveStats(c *gin.Context) {
 			"last_seen_lon":      lastSeenLon,
 			"last_seen_distance": lastSeenDistance,
 			"track":              track,
+			// Registration data
+			"reg_type":                       regType,
+			"icao_type":                      icaoType,
+			"manufacturer":                   manufacturer,
+			"registered_owner_country_name":  registeredOwnerCountryName,
+			"registered_owner_country_iso":   registeredOwnerCountryISO,
+			"registered_owner_operator_flag": registeredOwnerOperatorFlag,
+			"registered_owner":               registeredOwner,
+			"url_photo":                      urlPhoto,
+			"url_photo_thumbnail":            urlPhotoThumbnail,
+			// Route data
+			"airline_name":                 airlineName,
+			"airline_icao":                 airlineICAO,
+			"origin_country_name":          originCountryName,
+			"origin_country_iso_name":      originCountryISOName,
+			"origin_iata_code":             originIATACode,
+			"origin_icao_code":             originICAOCode,
+			"origin_name":                  originName,
+			"destination_country_name":     destinationCountryName,
+			"destination_country_iso_name": destinationCountryISOName,
+			"destination_iata_code":        destinationIATACode,
+			"destination_icao_code":        destinationICAOCode,
+			"destination_name":             destinationName,
 		})
 	}
 
@@ -190,7 +269,7 @@ func (s *APIServer) getGroupedInterestingAircraft(c *gin.Context, query string, 
 		var tag1, tag2, tag3 string
 		var imageLink1, imageLink2, imageLink3 *string // Use pointers for nullable fields
 		var hex, flight string
-		var seen interface{}
+		var seen *time.Time
 		var seenEpoch float64
 
 		err := rows.Scan(&icao, &registration, &operator, &aircraftType, &icaoType,
@@ -304,7 +383,7 @@ func (s *APIServer) getFastestAircraft(c *gin.Context) {
 	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
-		var firstSeen, lastSeen interface{}
+		var firstSeen, lastSeen *time.Time
 		var groundSpeed float64
 		var indicatedAirSpeed, trueAirSpeed int
 
@@ -350,7 +429,7 @@ func (s *APIServer) getSlowestAircraft(c *gin.Context) {
 	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
-		var firstSeen, lastSeen interface{}
+		var firstSeen, lastSeen *time.Time
 		var groundSpeed float64
 		var indicatedAirSpeed, trueAirSpeed int
 
@@ -396,7 +475,7 @@ func (s *APIServer) getHighestAircraft(c *gin.Context) {
 	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
-		var firstSeen, lastSeen interface{}
+		var firstSeen, lastSeen *time.Time
 		var barometricAltitude, geometricAltitude int
 
 		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen,
@@ -440,7 +519,7 @@ func (s *APIServer) getLowestAircraft(c *gin.Context) {
 	aircraft := []gin.H{}
 	for rows.Next() {
 		var hex, flight, registration, aircraftType string
-		var firstSeen, lastSeen interface{}
+		var firstSeen, lastSeen *time.Time
 		var barometricAltitude, geometricAltitude int
 
 		err := rows.Scan(&hex, &flight, &registration, &aircraftType, &firstSeen,
