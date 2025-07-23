@@ -44,7 +44,7 @@ func updateAircraftDatabase(pg *postgres) {
 }
 
 func getRuler() *cheapruler.CheapRuler {
-	ruler, err := cheapruler.NewCheapruler(getLon(), "kilometers")
+	ruler, err := cheapruler.NewCheapruler(getLat(), "kilometers")
 	if err != nil {
 		fmt.Println("Error creating ruler: ", err)
 		return nil
@@ -278,6 +278,22 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 		lastSeenDistance := getDistance([]float64{aircraft.Lon, aircraft.Lat})
 		existingAircraft.LastSeenDistance = sql.NullFloat64{Float64: *lastSeenDistance, Valid: true}
 
+		// Update destination distance
+		if aircraft.Flight != "" {
+			routeData, err := getRouteData(pg, aircraft.Flight)
+			if err != nil {
+				fmt.Printf("Error fetching route data for flight %s: %v\n", aircraft.Flight, err)
+			} else if routeData != nil && routeData.DestinationLatitude.Valid && routeData.DestinationLongitude.Valid {
+				destinationDistance := getDestinationDistance(
+					aircraft.Lat,
+					aircraft.Lon,
+					routeData.DestinationLatitude.Float64,
+					routeData.DestinationLongitude.Float64)
+
+				existingAircraft.DestinationDistance = sql.NullFloat64{Float64: destinationDistance, Valid: true}
+			}
+		}
+
 		// Update track
 		existingAircraft.Track = aircraft.Track
 
@@ -354,4 +370,52 @@ func getLon() float64 {
 func getRadius() float64 {
 	radius, _ := strconv.ParseFloat(os.Getenv("RADIUS"), 64)
 	return radius
+}
+
+type RouteData struct {
+	DestinationLatitude  sql.NullFloat64
+	DestinationLongitude sql.NullFloat64
+}
+
+func getRouteData(pg *postgres, flight string) (*RouteData, error) {
+	if flight == "" {
+		return nil, nil
+	}
+
+	var route RouteData
+	query := `
+		SELECT destination_latitude, destination_longitude
+		FROM route_data
+		WHERE route_callsign = $1
+		AND destination_latitude IS NOT NULL
+		AND destination_longitude IS NOT NULL
+		LIMIT 1
+	`
+
+	err := pg.db.QueryRow(context.Background(), query, flight).Scan(
+		&route.DestinationLatitude,
+		&route.DestinationLongitude,
+	)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil // No route data found
+		}
+		return nil, err
+	}
+
+	return &route, nil
+}
+
+func getDestinationDistance(currentLat, currentLon, destLat, destLon float64) float64 {
+	ruler, err := cheapruler.NewCheapruler(currentLat, "kilometers")
+	if err != nil {
+		fmt.Printf("Error creating ruler for destination distance: %v\n", err)
+		return 0
+	}
+
+	currentLoc := []float64{currentLon, currentLat}
+	destLoc := []float64{destLon, destLat}
+
+	return ruler.Distance(currentLoc, destLoc)
 }
