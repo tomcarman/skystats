@@ -11,6 +11,7 @@
     let error = null;
     let interval = null;
     let selectedAircraft = null;
+    let imageLoading = false;
 
     async function fetchData() {
         try {
@@ -53,11 +54,18 @@
             const distance = parseFloat(aircraft.last_seen_distance);
             let idealSlot;
 
-            if (distance < 4) idealSlot = 0;
-            else if (distance < 8) idealSlot = 1;
-            else if (distance < 12) idealSlot = 2;
-            else if (distance < 16) idealSlot = 3;
-            else if (distance < 20) idealSlot = 4;
+            // if (distance < 4) idealSlot = 0;
+            // else if (distance < 8) idealSlot = 1;
+            // else if (distance < 12) idealSlot = 2;
+            // else if (distance < 16) idealSlot = 3;
+            // else if (distance < 20) idealSlot = 4;
+            // else return;
+
+            if (distance < 20) idealSlot = 0;
+            else if (distance < 40) idealSlot = 1;
+            else if (distance < 60) idealSlot = 2;
+            else if (distance < 80) idealSlot = 3;
+            else if (distance < 100) idealSlot = 4;
             else return;
 
             let placed = false;
@@ -108,6 +116,7 @@
 
     function showAircraftModal(aircraft) {
         selectedAircraft = aircraft;
+        imageLoading = true;
         // @ts-ignore
         document.getElementById("aircraft-modal").showModal()
     }
@@ -175,7 +184,7 @@
                                         badge badge-accent 
                                         uppercase font-bold tracking-wider text-white text-[8px] sm:text-xs"
                                     on:click={() => showAircraftModal(aircraft)}>
-                                {aircraft.registration}
+                                {aircraft.registration || aircraft.hex}
                             </button>
                         </div>
                         <div class="timeline-middle">
@@ -247,31 +256,87 @@
 </div>
 
 <dialog id="aircraft-modal" class="modal" on:close={closeModal}>
-<div class="modal-box max-w-4xl">
+<div class="modal-box max-w-5xl">
         {#if selectedAircraft}
-            <div class="flex items-center justify-between mb-2">
-                <h3 class="text-lg font-bold">{selectedAircraft.registration} - {selectedAircraft.type}</h3>
-                <!-- <div class="flex gap-2">
-                    {#if selectedAircraft.tag1}
-                        <div class="badge badge-accent text-white">{selectedAircraft.tag1}</div>
-                    {/if}
-                     {#if selectedAircraft.tag2}
-                        <div class="badge badge-accent text-white">{selectedAircraft.tag2}</div>
-                    {/if}
-                    {#if selectedAircraft.tag3}
-                        <div class="badge badge-accent text-white">{selectedAircraft.tag3}</div>
-                    {/if}
-                </div> -->
-            </div>
-            <p class="text-sm text-gray-600 mb-4">{selectedAircraft.operator} {#if selectedAircraft.flight} - {selectedAircraft.flight} {/if}</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {#if selectedAircraft.url_photo}
-                    <img src={selectedAircraft.url_photo} alt="{selectedAircraft.registration} photo 1" class="w-full h-auto rounded-lg" />
+            <!--header-->
+            <div class="flex items-start gap-3">
+                    {#if selectedAircraft.airline_icao}
+                    <div class="bg-base-200 p-2 rounded-lg">
+                        <img src="https://doj0yisjozhv1.cloudfront.net/square-logos/{selectedAircraft.airline_icao}.png" width="40" height="40" alt="{selectedAircraft.airline_icao}">
+                    </div>
                 {/if}
+                <div>
+                    <h3 class="text-lg font-bold">{selectedAircraft.registration || 'Unknown'}</h3>
+                    <p class="text-sm uppercase tracking-wider font-mono">{selectedAircraft.hex || ''}</p>
+                </div>
             </div>
-            {#if !selectedAircraft.url_photo}
-                <p class="text-center text-gray-500 py-8">No photos available for this aircraft</p>
-            {/if}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-6 gap-6">
+                
+                <!--image-->
+                <!-- <div class="md:mr-4 lg:mr-8"> -->
+                <div class="mt-6 mr-8">
+                    {#if selectedAircraft.url_photo}
+                        {#if imageLoading}
+                            <div class="skeleton w-full max-w-sm rounded-lg aspect-[3/2]"></div>
+                        {/if}
+                        <img 
+                            src={selectedAircraft.url_photo} 
+                            alt="{selectedAircraft.registration}" 
+                            class="w-full max-w-sm h-auto rounded-lg {imageLoading ? 'hidden' : ''}"
+                            on:load={() => imageLoading = false}
+                            on:error={() => imageLoading = false}
+                        />
+                    {/if}
+                    {#if !selectedAircraft.url_photo}
+                        <div class="bg-base-200 w-full max-w-sm aspect-[3/2] flex items-center justify-center rounded-lg">
+                            <p class="text-center text-sm text-gray-500">No photo available</p>
+                        </div>
+                    {/if}
+                    {#if selectedAircraft.icao_type}
+                        <p class="text-sm mt-4 font-bold">{selectedAircraft.icao_type}</p>
+                        <p class="text-sm text-gray-500 italic">{selectedAircraft.reg_type}</p>
+                    {/if}  
+                </div>
+                <!-- reg info -->
+                <div>
+                    <p class="font-semibold uppercase tracking-wider">Registration</p>
+                    {#if selectedAircraft.reg_type}
+                        <p>icao_type: {selectedAircraft.icao_type}</p>
+                        <p>manufacturer: {selectedAircraft.manufacturer}</p>
+                        <p>registered_owner_country_name: {selectedAircraft.registered_owner_country_name}</p>
+                        <p>registered_owner_country_iso: {selectedAircraft.registered_owner_country_iso}</p>
+                        <p>registered_owner_operator_flag: {selectedAircraft.registered_owner_operator_flag}</p>
+                        <p>registered_owner: {selectedAircraft.registered_owner}</p>
+                    {:else}
+                        <div class="bg-base-200 w-full max-w-sm flex items-center justify-center rounded-lg">
+                            <p class="text-center text-sm text-gray-500">No registration data available</p>
+                        </div>
+                    {/if}
+                </div>
+                <!-- route info -->
+                <div>
+                    <p class="font-semibold uppercase tracking-wider">Route</p>
+                    {#if selectedAircraft.origin_country_iso_name}
+                        <p>airline_name: {selectedAircraft.airline_name}</p>
+                        <p>airline_icao: {selectedAircraft.airline_icao}</p>
+                        <p>origin_country_name: {selectedAircraft.origin_country_name}</p>
+                        <p>origin_country_iso_name: {selectedAircraft.origin_country_iso_name}</p>
+                        <p>origin_iata_code: {selectedAircraft.origin_iata_code}</p>
+                        <p>origin_icao_code: {selectedAircraft.origin_icao_code}</p>
+                        <p>origin_name: {selectedAircraft.origin_name}</p>
+                        <p>destination_country_name: {selectedAircraft.destination_country_name}</p>
+                        <p>destination_country_iso_name: {selectedAircraft.destination_country_iso_name}</p>
+                        <p>destination_iata_code: {selectedAircraft.destination_iata_code}</p>
+                        <p>destination_icao_code: {selectedAircraft.destination_icao_code}</p>
+                        <p>destination_name: {selectedAircraft.destination_name}    </p>
+                    
+                    {:else}
+                        <div class="bg-base-200 w-full max-w-sm flex items-center justify-center rounded-lg">
+                            <p class="text-center text-sm text-gray-500">No route data available</p>
+                        </div>
+                    {/if}
+                </div>
+            </div>
         {/if}
         <div class="modal-action">
             <form method="dialog">
