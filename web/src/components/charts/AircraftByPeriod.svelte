@@ -117,17 +117,6 @@
         return `${count.toLocaleString()} ${unit} (${percentage}%)`;
     }
 
-    function getXAxisTickConfig() {
-        return {
-            color: CHART_COLOURS.baseContent,
-            maxRotation: 45,
-            minRotation: 45,
-            font: {
-                family: 'monospace'
-            }
-        };
-    }
-
     function createChart() {
         if (!chartCanvas || !chartData) return;
 
@@ -191,7 +180,13 @@
                 grid: {
                     display: false
                 },
-                ticks: getXAxisTickConfig(),
+                ticks: {
+                    color: CHART_COLOURS.baseContent,
+                    autoSkip: false,
+                    font: {
+                        family: 'monospace'
+                    }
+                },
                 border: {
                     color: CHART_COLOURS.baseContent
                 }
