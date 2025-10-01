@@ -111,7 +111,7 @@
 
     function getTooltipLabel(context) {
         const index = context.dataIndex;
-        const count = context.parsed.y;
+        const count = context.parsed.x;
         const percentage = chartData.percentages[index];
         const unit = type === 'flights' ? 'flights' : 'aircraft';
         return `${count.toLocaleString()} ${unit} (${percentage}%)`;
@@ -173,16 +173,6 @@
         // scale configuration
         const scales = {
             x: {
-                type: 'category',
-                grid: {
-                    display: false
-                },
-                ticks: getXAxisTickConfig(),
-                border: {
-                    color: CHART_COLOURS.baseContent
-                }
-            },
-            y: {
                 beginAtZero: true,
                 grid: {
                     display: false
@@ -191,6 +181,17 @@
                     color: CHART_COLOURS.baseContent,
                     callback: (value) => value.toLocaleString()
                 },
+                border: {
+                    color: CHART_COLOURS.baseContent
+                }
+            },
+            y: {
+                type: 'category',
+                reverse: false,
+                grid: {
+                    display: false
+                },
+                ticks: getXAxisTickConfig(),
                 border: {
                     color: CHART_COLOURS.baseContent
                 }
@@ -203,7 +204,8 @@
             maintainAspectRatio: false,
             animation: true,
             plugins,
-            scales
+            scales,
+            indexAxis: 'y'
         };
 
         // main chart config
