@@ -9,6 +9,7 @@ services:
     container_name: skystats
     hostname: skystats
     environment:
+      - DEBUG=${DEBUG}
       # ADSB
       - READSB_AIRCRAFT_JSON=${READSB_AIRCRAFT_JSON}
       # PostgreSQL

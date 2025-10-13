@@ -30,7 +30,18 @@ func NewAPIServer(pg *postgres) *APIServer {
 }
 
 func (s *APIServer) Start() {
-	r := gin.Default()
+
+	debug := os.Getenv("DEBUG") == "true"
+
+	var r *gin.Engine
+	if debug {
+		r = gin.Default()
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		r = gin.New()
+		r.Use(gin.Recovery())
+	}
+
 
 	r.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")

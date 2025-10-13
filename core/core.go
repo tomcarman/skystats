@@ -17,6 +17,8 @@ func main() {
 
 	checkFlags()
 
+	debug := os.Getenv("DEBUG") == "true"
+
 	// Load .env file
 	if err := godotenv.Load("../.env"); err != nil {
 		if err := godotenv.Load(); err != nil {
@@ -103,7 +105,9 @@ func main() {
 	for {
 		select {
 		case <-updateAircraftDataTicker.C:
-			fmt.Println("Update Aircraft: ", time.Now().Format("2006-01-02 15:04:05"))
+			if debug {
+				fmt.Println("Update Aircraft: ", time.Now().Format("2006-01-02 15:04:05"))
+			}
 			updateAircraftDatabase(pg)
 		case <-updateStatisticsTicker.C:
 			fmt.Println("Update Statistics: ", time.Now().Format("2006-01-02 15:04:05"))
