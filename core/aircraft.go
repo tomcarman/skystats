@@ -110,7 +110,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			ias,
 			tas
 		FROM aircraft_data
-		WHERE hex = ANY($1::text[])
+		WHERE hex = ANY($1::text[]) AND (EXTRACT(EPOCH FROM NOW())::integer-last_seen_epoch) < 600
 		ORDER BY hex, last_seen DESC;
     `
 
@@ -138,9 +138,6 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 
 		if err != nil {
 			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
-			continue
-		}
-		if nowEpoch-existingAircraft.LastSeenEpoch > 600 {
 			continue
 		}
 
