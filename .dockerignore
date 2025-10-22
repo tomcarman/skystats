@@ -15,6 +15,7 @@ core/.env.*
 # Documentation
 README.md
 docs/
+!docs/logo/
 
 # IDE files
 .vscode/

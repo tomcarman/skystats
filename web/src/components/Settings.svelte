@@ -10,6 +10,7 @@
     let routeTableLimit;
     let interestingTableLimit;
     let recordHolderTableLimit;
+    let disablePlaneAlertDbTags;
     let settingsChanged = false;
     let version = { version: '...', commit: '...', date: '...' };
 
@@ -28,6 +29,9 @@
         if ($settings.record_holder_table_limit) {
             recordHolderTableLimit = parseInt($settings.record_holder_table_limit.setting_value);
         }
+        if ($settings.disable_planealertdb_tags) {
+            disablePlaneAlertDbTags = $settings.disable_planealertdb_tags.setting_value === 'true';
+        }
     }
 
     function handleSettingChange() {
@@ -45,7 +49,8 @@
         const updates = {
             route_table_limit: routeTableLimit.toString(),
             interesting_table_limit: interestingTableLimit.toString(),
-            record_holder_table_limit: recordHolderTableLimit.toString()
+            record_holder_table_limit: recordHolderTableLimit.toString(),
+            disable_planealertdb_tags: disablePlaneAlertDbTags.toString()
         };
 
         const success = await settings.save(updates);
@@ -105,7 +110,8 @@
                         <h4 class="text-lg font-semibold mb-6">Display Settings</h4>
 
                         <form id="display-settings-form" class="space-y-6">
-                            <!-- Route Table Limit -->
+                            
+                            <!-- Route Table Display Settings -->
                             <div>
                                 <p class="text-xl font-extralight tracking-wider mb-4">Route Information</p>
                                 <p class="text-m text-base-content/70 mb-2">
@@ -124,7 +130,10 @@
                                 />
                                 <span class="ml-2 text-sm text-base-content/70">(1-100)</span>
                             </div>
-                            <!-- Interesting Table Limit -->
+
+                            <!-- Interesting Table Display Settings -->
+
+                            <!-- Interesting Table Display Settings: Table Limit -->
                             <div>
                                 <p class="text-xl font-extralight tracking-wider mb-4">Interesting Aircraft</p>
                                 <p class="text-m text-base-content/70 mb-2">
@@ -143,7 +152,25 @@
                                 />
                                 <span class="ml-2 text-sm text-base-content/70">(1-100)</span>
                             </div>
-                            <!-- Record Holder Table Limit -->
+
+                            <!-- Interesting Table Display Settings: Disable Tags -->
+                            <div>
+                                <!-- <p class="text-xl font-extralight tracking-wider mb-4">PlaneAlertDB Tags</p> -->
+                                <label class="flex items-center gap-3">
+                                    <input
+                                        type="checkbox"
+                                        bind:checked={disablePlaneAlertDbTags}
+                                        on:change={handleSettingChange}
+                                        class="checkbox"
+                                    />
+                                    <span class="text-m text-base-content/70">
+                                        Disable <a href="https://github.com/sdr-enthusiasts/plane-alert-db?tab=readme-ov-file#description-of-categories" target="_blank" rel="noopener noreferrer" class="text-accent hover:text-primary transition-colors">plane-alert-db</a> tags in modal
+                                    </span>
+                                </label>
+                            </div>
+
+
+                            <!-- Record Holder Display Settings -->
                             <div>
                                 <p class="text-xl font-extralight tracking-wider mb-4">Record Holders</p>
                                 <p class="text-m text-base-content/70 mb-2">

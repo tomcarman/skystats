@@ -4,6 +4,7 @@ WORKDIR /app
 COPY go.mod go.sum /app
 COPY core /app/core
 COPY data /app/data
+COPY docs /app/docs
 RUN go mod download
 ARG VERSION=dev
 ARG COMMIT=none
@@ -33,6 +34,7 @@ ENV \
 
 COPY --from=node /app/dist /app/dist
 COPY --from=builder /app/skystats /app/core/skystats
+COPY --from=builder /app/docs/logo /app/docs/logo
 COPY migrations /app/migrations
 
 COPY rootfs/ /

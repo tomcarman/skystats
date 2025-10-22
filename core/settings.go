@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 type UserSetting struct {
@@ -28,6 +30,7 @@ func (s *SettingsService) GetAllSettings() ([]UserSetting, error) {
 
 	rows, err := s.pg.db.Query(context.Background(), query)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve user settings")
 		return nil, fmt.Errorf("Failed to retrieve user settings: %w", err)
 	}
 	defer rows.Close()
@@ -37,6 +40,7 @@ func (s *SettingsService) GetAllSettings() ([]UserSetting, error) {
 		var setting UserSetting
 		err := rows.Scan(&setting.ID, &setting.SettingKey, &setting.SettingValue, &setting.Description)
 		if err != nil {
+			log.Error().Err(err).Msg("Failed to read user settings")
 			return nil, fmt.Errorf("Failed to read user settings: %w", err)
 		}
 		settings = append(settings, setting)
@@ -56,6 +60,7 @@ func (s *SettingsService) GetSetting(key string) (*UserSetting, error) {
 		&setting.ID, &setting.SettingKey, &setting.SettingValue, &setting.Description)
 
 	if err != nil {
+		log.Error().Err(err).Msgf("Failed to retrieve user setting %s", key)
 		return nil, fmt.Errorf("Failed to retrieve user setting %s: %w", key, err)
 	}
 
@@ -70,11 +75,12 @@ func (s *SettingsService) UpdateSetting(key string, value string) error {
 
 	result, err := s.pg.db.Exec(context.Background(), query, key, value)
 	if err != nil {
+		log.Error().Err(err).Msgf("Failed to update setting %s", key)
 		return fmt.Errorf("Failed to update setting %s: %w", key, err)
 	}
 
 	if result.RowsAffected() == 1 {
-		fmt.Printf("%s updated to %s\n", key, value)
+		log.Debug().Msgf("%s updated to %s", key, value)
 	}
 
 	return nil
@@ -93,11 +99,13 @@ func (s *SettingsService) UpdateSettings(settings map[string]string) error {
 	for key, value := range settings {
 		_, err := tx.Exec(context.Background(), query, key, value)
 		if err != nil {
+			log.Error().Err(err).Msgf("Failed to update setting %s", key)
 			return fmt.Errorf("Failed to update setting %s: %w", key, err)
 		}
 	}
 
 	if err := tx.Commit(context.Background()); err != nil {
+		log.Error().Err(err).Msg("Failed to commit settings")
 		return fmt.Errorf("Failed to commit settings: %w", err)
 	}
 

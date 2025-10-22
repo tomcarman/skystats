@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func updateInterestingSeen(pg *postgres) {
@@ -51,7 +51,7 @@ func updateInterestingSeen(pg *postgres) {
 	rows, err := pg.db.Query(context.Background(), query, aircraftsHex)
 
 	if err != nil {
-		fmt.Println("updateInterestingSeen() - Error querying db: ", err)
+		log.Error().Err(err).Msg("updateInterestingSeen() - Error querying db")
 		return
 	}
 
@@ -80,7 +80,7 @@ func updateInterestingSeen(pg *postgres) {
 		)
 
 		if err != nil {
-			fmt.Println("updateInterestingSeen() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("updateInterestingSeen() - Error scanning rows")
 			continue
 		}
 
@@ -110,7 +110,7 @@ func updateInterestingSeen(pg *postgres) {
 		}
 	}
 
-	fmt.Println("Interesting aircrafts found: ", len(interestingAircrafts))
+	log.Debug().Msgf("Interesting aircrafts found: %d", len(interestingAircrafts))
 
 	batch := &pgx.Batch{}
 
@@ -195,7 +195,7 @@ func updateInterestingSeen(pg *postgres) {
 	for i := 0; i < len(interestingAircrafts); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("insertRegistrations() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("insertRegistrations() - Unable to insert data")
 		}
 	}
 
@@ -233,7 +233,7 @@ func unprocessedInteresting(pg *postgres) []Aircraft {
 	rows, err := pg.db.Query(context.Background(), query)
 
 	if err != nil {
-		fmt.Println("unprocessedInteresting() - Error querying db: ", err)
+		log.Error().Err(err).Msg("unprocessedInteresting() - Error querying db")
 		return nil
 	}
 
@@ -267,13 +267,13 @@ func unprocessedInteresting(pg *postgres) []Aircraft {
 		)
 
 		if err != nil {
-			fmt.Println("unprocessedInteresting() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("unprocessedInteresting() - Error scanning rows")
 			return nil
 		}
 
 		aircrafts = append(aircrafts, aircraft)
 	}
 
-	fmt.Println("Aircrafts that have not have interesting processed: ", len(aircrafts))
+	log.Debug().Msgf("Aircrafts that have not have interesting processed: %d", len(aircrafts))
 	return aircrafts
 }

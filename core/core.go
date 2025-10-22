@@ -28,7 +28,7 @@ func main() {
 	// Load .env file
 	if err := godotenv.Load("../.env"); err != nil {
 		if err := godotenv.Load(); err != nil {
-			log.Warn().Msg("No .env file found, using environment variables")
+			log.Info().Msg("No .env file found, using environment variables")
 		}
 	}
 
@@ -70,11 +70,6 @@ func main() {
 		log.Info().Msg("Skystats: Running in daemon mode")
 	}
 
-	// Welcome to skystats
-	if banner, err := os.ReadFile("../docs/logo/skystats_ascii.txt"); err == nil {
-		log.Info().Msg("\n" + string(banner))
-	}
-
 	url := GetConnectionUrl()
 
 	log.Info().Msg("Connecting to Postgres database")
@@ -88,11 +83,11 @@ func main() {
 	// Setup db
 	log.Info().Msg("Checking to see if any database initialisation / migrations are needed")
 	if err := RunDatabaseMigrations(); err != nil {
-		log.Printf("Error initialising or migrating the database: %v", err)
+		log.Error().Err(err).Msg("Error initialising or migrating the database")
 		os.Exit(1)
 	}
 
-	log.Info().Msg("Updating database with plane-alert-db data")
+	log.Info().Msg("Checking if interesting aircraft reference data needs updating from plane-alert-db")
 	if err := UpsertPlaneAlertDb(pg); err != nil {
 		log.Error().Msgf("Error updating interesting aircraft data: %v", err)
 		os.Exit(1)
@@ -105,11 +100,19 @@ func main() {
 		apiServer.Start()
 	}()
 
+	log.Info().Msg("Starting scheduled tasks")
+
 	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
 	updateStatisticsTicker := time.NewTicker(120 * time.Second)
 	updateRegistrationsTicker := time.NewTicker(30 * time.Second)
 	updateRoutesTicker := time.NewTicker(300 * time.Second)
 	updateInterestingSeenTicker := time.NewTicker(120 * time.Second)
+
+	// Welcome to skystats
+	if banner, err := os.ReadFile("../docs/logo/skystats_ascii.txt"); err == nil {
+		log.Info().Msg("\n" + string(banner))
+	}
+	log.Info().Msg("Welcome to Skystats!")
 
 	defer func() {
 		log.Info().Msg("Closing database connection")

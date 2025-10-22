@@ -56,11 +56,11 @@ func UpsertPlaneAlertDb(pg *postgres) error {
 	}
 
 	if !needsUpdating {
-		log.Info().Msg("No updates found for interesting aircraft data")
+		log.Info().Msg("No new data in plane-alert-db, skipping update")
 		return nil
 	}
 
-	log.Info().Msg("Updating interesting aircraft data from plane-alert-db")
+	log.Info().Msg("New data found in plane-alert-db, updating interesting aircraft reference data")
 
 	planeAlertRecords, err := fetchCSVData(planeAlertUrl)
 	if err != nil {
@@ -157,7 +157,7 @@ func UpsertPlaneAlertDb(pg *postgres) error {
 		}
 	}
 
-	log.Info().Msgf("Succesfully upserted %d interesting aircraft records", len(data))
+	log.Info().Msgf("Succesfully upserted %d interesting aircraft records from plane-alert-db", len(data))
 
 	return nil
 }

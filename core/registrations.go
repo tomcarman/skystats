@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func updateRegistrations(pg *postgres) {
@@ -32,12 +32,12 @@ func updateRegistrations(pg *postgres) {
 		registration, err := getRegistration(aircraft)
 
 		if err != nil {
-			fmt.Println("Error getting registration: ", err)
+			log.Error().Err(err).Msg("Error fetching registration for " + aircraft.Hex)
 			continue
 		}
 
 		if registration.Response.Aircraft.ModeS == "" {
-			fmt.Printf("No registration found for %s \n", aircraft.Hex)
+			log.Debug().Msgf("No registration found for %s \n", aircraft.Hex)
 			existing = append(existing, aircraft)
 			continue
 		}
@@ -107,7 +107,7 @@ func insertRegistrations(pg *postgres, registrations []RegistrationInfo) {
 	for i := 0; i < len(registrations); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("insertRegistrations() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("insertRegistrations() - Unable to insert data")
 		}
 	}
 
@@ -150,7 +150,7 @@ func unprocessedRegistrations(pg *postgres) []Aircraft {
 	rows, err := pg.db.Query(context.Background(), query)
 
 	if err != nil {
-		fmt.Println("unprocessedRegistrations() - Error querying db: ", err)
+		log.Error().Err(err).Msg("unprocessedRegistrations() - Error querying db")
 		return nil
 	}
 	defer rows.Close()
@@ -167,14 +167,14 @@ func unprocessedRegistrations(pg *postgres) []Aircraft {
 		)
 
 		if err != nil {
-			fmt.Println("unprocessedRegistrations() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("unprocessedRegistrations() - Error scanning rows")
 			return nil
 		}
 
 		aircrafts = append(aircrafts, aircraft)
 	}
 
-	fmt.Println("Aircrafts that have not have registration processed: ", len(aircrafts))
+	log.Debug().Msgf("Aircrafts that have not have registration processed: %d", len(aircrafts))
 	return aircrafts
 }
 
@@ -195,7 +195,7 @@ func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existi
 	rows, err := pg.db.Query(context.Background(), query, hexValues)
 
 	if err != nil {
-		fmt.Println("checkRegistrationExists() - Error querying db: ", err)
+		log.Error().Err(err).Msg("checkRegistrationExists() - Error querying db")
 		return nil, nil
 	}
 	defer rows.Close()
@@ -208,7 +208,7 @@ func checkRegistrationExists(pg *postgres, aircraftToProcess []Aircraft) (existi
 		)
 
 		if err != nil {
-			fmt.Println("checkRegistrationExists() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("checkRegistrationExists() - Error scanning rows")
 			continue
 		}
 

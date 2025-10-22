@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	cheapruler "github.com/JamesLMilner/cheap-ruler-go"
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +22,7 @@ func updateAircraftDatabase(pg *postgres) {
 	responseData, err := Fetch()
 
 	if err != nil {
-		fmt.Println("Error fetching data: ", err)
+		log.Error().Err(err).Msg("Unable to fetch data from feeder aircraft.json")
 		return
 	}
 
@@ -140,7 +142,7 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			&existingAircraft.Tas)
 
 		if err != nil {
-			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("getAircraftsRecentlySeen() - error scanning rows")
 			continue
 		}
 
@@ -269,7 +271,7 @@ func insertNewAircrafts(pg *postgres, nowEpoch float64, existingAircrafts map[st
 	for i := 0; i < len(aircraftsToInsert); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("insertNewAircrafts() - unable to insert data: ", err)
+			log.Error().Err(err).Msg("insertNewAircrafts() - unable to insert data")
 		}
 	}
 }
@@ -378,7 +380,7 @@ func updateExistingAircrafts(pg *postgres, nowEpoch float64, aircrafts []Aircraf
 	for i := 0; i < len(existingAircrafts); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("updateExistingAircrafts() - unable to update data: ", err)
+			log.Error().Err(err).Msg("updateExistingAircrafts() - unable to update data")
 		}
 	}
 }
@@ -436,7 +438,7 @@ func getRouteData(pg *postgres, flight string) (*RouteData, error) {
 func getDestinationDistance(currentLat, currentLon, destLat, destLon float64) float64 {
 	ruler, err := cheapruler.NewCheapruler(currentLat, "kilometers")
 	if err != nil {
-		fmt.Printf("Error creating ruler for destination distance: %v\n", err)
+		log.Error().Err(err).Msg("Error creating ruler for destination distance")
 		return 0
 	}
 

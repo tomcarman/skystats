@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
@@ -22,7 +22,7 @@ func MarkProcessed(pg *postgres, colName string, aircrafts []Aircraft) {
 	for i := 0; i < len(aircrafts); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("MarkProcessed() - Unable to update data: ", err)
+			log.Error().Err(err).Msg("MarkProcessed() - Unable to update data")
 		}
 	}
 }
@@ -34,7 +34,7 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 	var rowCount int
 	err := pg.db.QueryRow(context.Background(), queryCount).Scan(&rowCount)
 	if err != nil {
-		fmt.Println("DeleteExcessRows() - Error querying db in DeleteExcessRows(): ", err)
+		log.Error().Err(err).Msg("DeleteExcessRows() - Error querying db in DeleteExcessRows()")
 		return
 	}
 
@@ -43,7 +43,7 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 		excessRows := rowCount - maxRows
 
 		if excessRows <= 0 {
-			fmt.Println("DeleteExcessRows() - No excess rows in ", tableName)
+			log.Debug().Msgf("DeleteExcessRows() - No excess rows in %s", tableName)
 			return
 		}
 
@@ -57,7 +57,7 @@ func DeleteExcessRows(pg *postgres, tableName string, metricName string, sortOrd
 
 		_, err := pg.db.Exec(context.Background(), deleteStatement, excessRows)
 		if err != nil {
-			fmt.Println("DeleteExcessRows() - Failed to delete excess rows in ", tableName, ": ", err)
+			log.Error().Err(err).Msgf("DeleteExcessRows() - Failed to delete excess rows in %s", tableName)
 		}
 	}
 }

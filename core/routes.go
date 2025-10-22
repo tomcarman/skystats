@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 	"github.com/tomcarman/skystats/data"
 )
 
@@ -34,7 +35,7 @@ func updateRoutes(pg *postgres) {
 
 	routes, err := getRoutes(new)
 	if err != nil {
-		fmt.Println("Error getting routes: ", err)
+		log.Error().Err(err).Msg("Error getting routes")
 		return
 	}
 
@@ -59,7 +60,7 @@ func unprocessedRoutes(pg *postgres) []Aircraft {
 	rows, err := pg.db.Query(context.Background(), query)
 
 	if err != nil {
-		fmt.Println("unprocessedRoutes() - Error querying db: ", err)
+		log.Error().Err(err).Msg("unprocessedRoutes() - Error querying db")
 		return nil
 	}
 	defer rows.Close()
@@ -78,14 +79,14 @@ func unprocessedRoutes(pg *postgres) []Aircraft {
 		)
 
 		if err != nil {
-			fmt.Println("unprocessedRoutes() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("unprocessedRoutes() - Error scanning rows")
 			return nil
 		}
 
 		aircrafts = append(aircrafts, aircraft)
 	}
 
-	fmt.Println("Aircrafts that have not have routes processed: ", len(aircrafts))
+	log.Debug().Msgf("Aircrafts that have not have routes processed: %d", len(aircrafts))
 	return aircrafts
 }
 
@@ -108,7 +109,7 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 	rows, err := pg.db.Query(context.Background(), query, callsignValues)
 
 	if err != nil {
-		fmt.Println("checkRouteExists() - Error querying db: ", err)
+		log.Error().Err(err).Msg("checkRouteExists() - Error querying db")
 		return nil, nil
 	}
 	defer rows.Close()
@@ -121,7 +122,7 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 		)
 
 		if err != nil {
-			fmt.Println("checkRouteExists() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("checkRouteExists() - Error scanning rows")
 			continue
 		}
 
@@ -318,7 +319,7 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 	for i := 0; i < queuedCount; i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("insertRoutes() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("insertRoutes() - Unable to insert data")
 		}
 	}
 

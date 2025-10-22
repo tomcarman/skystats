@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"sort"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func updateMeasurementStatistics(pg *postgres) {
@@ -94,7 +94,7 @@ func updateLowestAircraft(pg *postgres, aircrafts []Aircraft) {
 	for i := 0; i < len(aircraftsToInsert); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("updateLowestAircraft() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("updateLowestAircraft() - Unable to insert data")
 		}
 	}
 	DeleteExcessRows(pg, tableName, metricName, "DESC", 50)
@@ -178,7 +178,7 @@ func updateHighestAircraft(pg *postgres, aircrafts []Aircraft) {
 	for i := 0; i < len(aircraftsToInsert); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("updateHighestAircraft() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("updateHighestAircraft() - Unable to insert data")
 		}
 	}
 
@@ -269,7 +269,7 @@ func updateSlowestAircraft(pg *postgres, aircrafts []Aircraft) {
 	for i := 0; i < len(aircraftsToInsert); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("updateSlowestAircraft() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("updateSlowestAircraft() - Unable to insert data")
 		}
 	}
 
@@ -356,7 +356,7 @@ func updateFastestAircraft(pg *postgres, aircrafts []Aircraft) {
 	for i := 0; i < len(aircraftsToInsert); i++ {
 		_, err := br.Exec()
 		if err != nil {
-			fmt.Println("updateFastestAircraft() - Unable to insert data: ", err)
+			log.Error().Err(err).Msg("updateFastestAircraft() - Unable to insert data")
 		}
 	}
 
@@ -379,7 +379,7 @@ func getAircraftsForMeasurementStatistics(pg *postgres) []Aircraft {
 
 	rows, err := pg.db.Query(context.Background(), query)
 	if err != nil {
-		fmt.Println("getAircraftsForMeasurementStatistics() - Error querying db: ", err)
+		log.Error().Err(err).Msg("getAircraftsForMeasurementStatistics() - Error querying db")
 		return nil
 	}
 	defer rows.Close()
@@ -409,12 +409,12 @@ func getAircraftsForMeasurementStatistics(pg *postgres) []Aircraft {
 			&aircraft.SlowestProcessed)
 
 		if err != nil {
-			fmt.Println("getAircraftsForMeasurementStatistics() - Error scanning rows: ", err)
+			log.Error().Err(err).Msg("getAircraftsForMeasurementStatistics() - Error scanning rows")
 			return nil
 		}
 		aircrafts = append(aircrafts, aircraft)
 	}
 
-	fmt.Println("Aircrafts that have not have statistics processed: ", len(aircrafts))
+	log.Debug().Msgf("Aircrafts that have not have statistics processed: %d", len(aircrafts))
 	return aircrafts
 }

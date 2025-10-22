@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte'
-    import { refreshInterestingData } from '../stores/settings';
+    import { settings, refreshInterestingData } from '../stores/settings';
 
     export let endpoint;
     export let title;
@@ -67,6 +67,8 @@
         fetchData();
     }
 
+    $: disableTags = $settings['disable_planealertdb_tags']?.setting_value === 'true';
+
 </script>
 
 <div>
@@ -130,17 +132,19 @@
         {#if selectedAircraft}
             <div class="flex items-center justify-between mb-2">
                 <h3 class="text-lg font-bold">{selectedAircraft.registration} - {selectedAircraft.type}</h3>
-                <div class="flex gap-2">
-                    {#if selectedAircraft.tag1}
-                        <div class="badge badge-accent text-white">{selectedAircraft.tag1}</div>
-                    {/if}
-                     {#if selectedAircraft.tag2}
-                        <div class="badge badge-accent text-white">{selectedAircraft.tag2}</div>
-                    {/if}
-                    {#if selectedAircraft.tag3}
-                        <div class="badge badge-accent text-white">{selectedAircraft.tag3}</div>
-                    {/if}
-                </div>
+                {#if disableTags === false}
+                    <div class="flex gap-2">
+                        {#if selectedAircraft.tag1}
+                            <div class="badge badge-accent text-white">{selectedAircraft.tag1}</div>
+                        {/if}
+                        {#if selectedAircraft.tag2}
+                            <div class="badge badge-accent text-white">{selectedAircraft.tag2}</div>
+                        {/if}
+                        {#if selectedAircraft.tag3}
+                            <div class="badge badge-accent text-white">{selectedAircraft.tag3}</div>
+                        {/if}
+                    </div>
+                {/if}
             </div>
             <p class="text-sm text-gray-600 mb-4">{selectedAircraft.operator} {#if selectedAircraft.flight} - {selectedAircraft.flight} {/if}</p>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
