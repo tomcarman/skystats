@@ -23,6 +23,7 @@ services:
       - RADIUS=${RADIUS}
       - ABOVE_RADIUS=${ABOVE_RADIUS}
       - DOMESTIC_COUNTRY_ISO=${DOMESTIC_COUNTRY_ISO}
+      - LOG_LEVEL=${LOG_LEVEL}
 
   skystats-db:
     image: postgres:17

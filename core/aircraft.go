@@ -96,6 +96,8 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 		hexValues = append(hexValues, a.Hex)
 	}
 
+	recentThreshold := int(nowEpoch) - 600
+
 	query := `
 		SELECT DISTINCT ON (hex)
 			id,
@@ -110,11 +112,12 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 			ias,
 			tas
 		FROM aircraft_data
-		WHERE hex = ANY($1::text[])
+		WHERE hex = ANY($1::text[]) 
+			AND last_seen_epoch > $2
 		ORDER BY hex, last_seen DESC;
-    `
+	`
 
-	rows, err := pg.db.Query(context.Background(), query, hexValues)
+	rows, err := pg.db.Query(context.Background(), query, hexValues, recentThreshold)
 	if err != nil {
 		fmt.Println("getAircraftsRecentlySeen() - Error querying db: ", err)
 		return nil
@@ -138,9 +141,6 @@ func getAircraftsRecentlySeen(pg *postgres, nowEpoch float64, aircrafts []Aircra
 
 		if err != nil {
 			fmt.Println("getAircraftsRecentlySeen() - Error scanning rows: ", err)
-			continue
-		}
-		if nowEpoch-existingAircraft.LastSeenEpoch > 600 {
 			continue
 		}
 

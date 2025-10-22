@@ -129,6 +129,8 @@ func (s *APIServer) Start() {
 func (s *APIServer) getFlightsSeenMetrics(c *gin.Context) {
 	stats := gin.H{}
 
+	tz := s.getTimezone(c)
+
 	// Total flights count
 	var totalFlights int
 	err := s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM aircraft_data").Scan(&totalFlights)
@@ -139,7 +141,7 @@ func (s *APIServer) getFlightsSeenMetrics(c *gin.Context) {
 	// Today's flights count
 	var todayFlights int
 	err = s.pg.db.QueryRow(context.Background(),
-		"SELECT COUNT(*) FROM aircraft_data WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayFlights)
+		"SELECT COUNT(*) FROM aircraft_data WHERE DATE(first_seen AT TIME ZONE $1) = CURRENT_DATE", tz).Scan(&todayFlights)
 	if err == nil {
 		stats["today_flights"] = todayFlights
 	}
@@ -159,6 +161,8 @@ func (s *APIServer) getFlightsSeenMetrics(c *gin.Context) {
 func (s *APIServer) getAircraftSeenMetrics(c *gin.Context) {
 	stats := gin.H{}
 
+	tz := s.getTimezone(c)
+
 	// Total aircraft count
 	var totalAircraft int
 	err := s.pg.db.QueryRow(context.Background(), "SELECT COUNT(DISTINCT hex) FROM aircraft_data").Scan(&totalAircraft)
@@ -169,7 +173,7 @@ func (s *APIServer) getAircraftSeenMetrics(c *gin.Context) {
 	// Today's aircraft count
 	var todayAircraft int
 	err = s.pg.db.QueryRow(context.Background(),
-		"SELECT COUNT(DISTINCT hex) FROM aircraft_data WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayAircraft)
+		"SELECT COUNT(DISTINCT hex) FROM aircraft_data WHERE DATE(first_seen AT TIME ZONE $1) = CURRENT_DATE", tz).Scan(&todayAircraft)
 	if err == nil {
 		stats["today_aircraft"] = todayAircraft
 	}
@@ -235,6 +239,8 @@ func (s *APIServer) getRouteMetrics(c *gin.Context) {
 func (s *APIServer) getInterestingMetrics(c *gin.Context) {
 	stats := gin.H{}
 
+	tz := s.getTimezone(c)
+
 	// Interesting aircraft count
 	var interestingCount int
 	err := s.pg.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM interesting_aircraft_seen").Scan(&interestingCount)
@@ -245,7 +251,7 @@ func (s *APIServer) getInterestingMetrics(c *gin.Context) {
 	// Today's interesting aircraft count
 	var todayInterestingCount int
 	err = s.pg.db.QueryRow(context.Background(),
-		"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE DATE(first_seen) = CURRENT_DATE").Scan(&todayInterestingCount)
+		"SELECT COUNT(*) FROM interesting_aircraft_seen WHERE DATE(first_seen AT TIME ZONE $1) = CURRENT_DATE", tz).Scan(&todayInterestingCount)
 	if err == nil {
 		stats["today_interesting"] = todayInterestingCount
 	}

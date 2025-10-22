@@ -13,7 +13,8 @@
     async function fetchData() {
 
         try {
-            const response = await fetch(endpoint);
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const response = await fetch(`${endpoint}?tz=${encodeURIComponent(tz)}`);
             if (!response.ok) {
                 throw new Error(`${response.status}`);
             }

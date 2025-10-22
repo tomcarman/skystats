@@ -11,6 +11,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rs/zerolog/log"
 )
 
 type Row struct {
@@ -48,18 +49,18 @@ func UpsertPlaneAlertDb(pg *postgres) error {
 
 	needsUpdating, commitHash, err := checkForUpdates(pg, isCustomPlaneAlertUrl)
 	if err != nil {
-		fmt.Printf("Error checking for updates: %v\n", err)
-		fmt.Printf("Updating despite error checking.\n")
+		log.Warn().Msgf("Error checking for updates: %v", err)
+		log.Warn().Msg("Updating despite error checking.")
 		needsUpdating = true
 		commitHash = "failed_to_get_commit_hash"
 	}
 
 	if !needsUpdating {
-		fmt.Println("No updates found for interesting aircraft data")
+		log.Info().Msg("No updates found for interesting aircraft data")
 		return nil
 	}
 
-	fmt.Println("Updating interesting aircraft data...")
+	log.Info().Msg("Updating interesting aircraft data from plane-alert-db")
 
 	planeAlertRecords, err := fetchCSVData(planeAlertUrl)
 	if err != nil {
@@ -156,7 +157,7 @@ func UpsertPlaneAlertDb(pg *postgres) error {
 		}
 	}
 
-	fmt.Printf("Succesfully upserted %d interesting aircraft records\n", len(data))
+	log.Info().Msgf("Succesfully upserted %d interesting aircraft records", len(data))
 
 	return nil
 }
@@ -258,7 +259,7 @@ func getLatestCommitHash() (string, error) {
 			return file.SHA, nil
 		}
 	}
-	fmt.Printf("getLatestCommitHash failed, printing commitResponse\n%+v\n", commitResponse)
-	fmt.Printf("getLatestCommitHash failed, printing body\n%s\n", body)
+	log.Error().Msgf("getLatestCommitHash failed, printing commitResponse\n%+v\n", commitResponse)
+	log.Error().Msgf("getLatestCommitHash failed, printing body\n%s\n", body)
 	return "", fmt.Errorf("Error finding plane-alert-db-images.csv commit hash")
 }

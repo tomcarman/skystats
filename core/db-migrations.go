@@ -3,7 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/golang-migrate/migrate/v4"
 	postgres_migrate "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -26,21 +27,20 @@ func RunDatabaseMigrations() error {
 	if err != nil {
 		return fmt.Errorf("Error checking if its a pre-script version of the db: %w", err)
 	}
-	log.Printf("Pre-script DB check result: %v", isExistingDb)
 
 	// Setup migrator
 	migrator, err := initMigrator(db)
 	if err != nil {
-		return err
+		return fmt.Errorf("Error initialising database migrator: %w", err)
 	}
 
 	// If it was a pre-script DB, force version to 1
 	if isExistingDb {
-		log.Println("Found existing pre-scripted db. Automatically setting as version 1...")
+		log.Info().Msg("Found existing pre-scripted db. Automatically setting as version 1...")
 		if err := migrator.Force(1); err != nil {
 			return fmt.Errorf("Error forcing migration version to 1 in pre-scripted db: %w", err)
 		}
-		log.Println("Successfully marked existing database as migration version 1")
+		log.Info().Msg("Successfully marked existing database as migration version 1")
 	}
 
 	// Run migrations
@@ -50,13 +50,13 @@ func RunDatabaseMigrations() error {
 	}
 
 	if err == migrate.ErrNoChange {
-		log.Println("Database schema is up to date")
+		log.Info().Msg("Database schema is up to date, no migrations needed")
 	} else {
 		version, _, err := migrator.Version()
 		if err != nil {
-			log.Printf("Migration completed, but unable to get current version: %v", err)
+			log.Warn().Msgf("Migration completed, but unable to get current version: %v", err)
 		}
-		log.Printf("Successfully migrated database to version: %d", version)
+		log.Info().Msgf("Successfully migrated database to version: %d", version)
 	}
 
 	return nil

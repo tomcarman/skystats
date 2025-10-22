@@ -1,5 +1,5 @@
 # Build the app
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25.3-alpine AS builder
 WORKDIR /app
 COPY go.mod go.sum /app
 COPY core /app/core
