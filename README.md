@@ -69,6 +69,61 @@ Alternatively there are some [Advanced Setup](#advanced-setup) options.
 
 <br/>
 
+## Upgrading from PostgreSQL 17 to 18
+<details>
+<summary>Instructions</summary>
+Postgres does not provide an easy mechanism to migrate between major releases. If you have an older install using PostgreSQL 17, follow the below steps to upgrade.
+
+1. Backup your existing database using `pg_dumpall`. Make sure the database container is running first!
+    ```
+    docker exec skystats-db pg_dumpall -U admin > backup.sql
+    ```
+2. Shutdown the existing database and skystats.
+    ```
+    docker compose down
+    ```
+3. Rename the old /data directory to ensure no incompatiable files and folder structures and carried forward.
+    ```
+    sudo mv ./data ./data-old
+    ```
+4. Update your `docker-compose.yml` for PostgreSQL 18
+```
+  skystats-db:
+    image: postgres:18 #change to 18
+    container_name: skystats-db
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    volumes:
+      - ./data:/var/lib/postgresql #remove "/data"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+```
+5. Bring up just the database.
+    ```
+    docker compose up -d skystats-db
+    ```
+6. Restore you data from backup to PostgrSQL 18 database.
+    ```
+    docker exec -i skystats-db psql -U admin -d skystats_db < backup.sql
+    ```
+7. Bring the whole stack up and validate old data transferred properly.
+    ```
+    docker compose up -d
+    ```
+8. Optional: Remove old data directory and backup.
+    ```
+    sudo rm -rf data-old
+    rm backup.sql
+    ```
+</details>
+
 ## Support / Feeback
 
 Skystats is still under early active development. If you're having issues getting it running, or have suggestions/feedback, then the best place to get support is on the [#skystats](https://discord.gg/znkBr2eyev) channel in the [SDR Enthusiasts Discord](https://discord.gg/86Tyxjcd94). Alternatively you can raise an [Issue](https://github.com/tomcarman/skystats/issues) in GitHub, and I'll do my best to support.

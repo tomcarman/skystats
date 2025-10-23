@@ -26,14 +26,14 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
 
   skystats-db:
-    image: postgres:17
+    image: postgres:18
     container_name: skystats-db
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - ./postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
