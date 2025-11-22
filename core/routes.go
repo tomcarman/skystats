@@ -31,9 +31,9 @@ func updateRoutes(pg *postgres) {
 		aircrafts = aircrafts[:100]
 	}
 
-	existing, new := checkRouteExists(pg, aircrafts)
+	aircraftsWithoutRoute := getAircraftsWithoutRouteData(pg, aircrafts)
 
-	routes, err := getRoutes(new)
+	routes, err := getRoutes(aircraftsWithoutRoute)
 	if err != nil {
 		log.Error().Err(err).Msg("Error getting routes")
 		return
@@ -41,8 +41,9 @@ func updateRoutes(pg *postgres) {
 
 	insertRoutes(pg, routes)
 
-	existing = append(existing, new...)
-	MarkProcessed(pg, "route_processed", existing)
+	// TODO: add route data to aircraft_data table
+
+	MarkProcessed(pg, "route_processed", aircrafts)
 
 }
 
@@ -90,7 +91,7 @@ func unprocessedRoutes(pg *postgres) []Aircraft {
 	return aircrafts
 }
 
-func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Aircraft, new []Aircraft) {
+func getAircraftsWithoutRouteData(pg *postgres, aircraftToProcess []Aircraft) []Aircraft {
 
 	var callsignValues []string
 	for _, a := range aircraftToProcess {
@@ -109,8 +110,8 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 	rows, err := pg.db.Query(context.Background(), query, callsignValues)
 
 	if err != nil {
-		log.Error().Err(err).Msg("checkRouteExists() - Error querying db")
-		return nil, nil
+		log.Error().Err(err).Msg("getAircraftsWithoutRouteData() - Error querying db")
+		return nil
 	}
 	defer rows.Close()
 
@@ -122,22 +123,21 @@ func checkRouteExists(pg *postgres, aircraftToProcess []Aircraft) (existing []Ai
 		)
 
 		if err != nil {
-			log.Error().Err(err).Msg("checkRouteExists() - Error scanning rows")
+			log.Error().Err(err).Msg("getAircraftsWithoutRouteData() - Error scanning rows")
 			continue
 		}
 
 		existingRoutes[route.Flight] = &route
 	}
 
+	var aircraftsWithoutRouteData []Aircraft
 	for _, a := range aircraftToProcess {
-		if _, ok := existingRoutes[a.Flight]; ok {
-			existing = append(existing, a)
-		} else {
-			new = append(new, a)
+		if _, ok := existingRoutes[a.Flight]; !ok {
+			aircraftsWithoutRouteData = append(aircraftsWithoutRouteData, a)
 		}
 	}
 
-	return existing, new
+	return aircraftsWithoutRouteData
 
 }
 
