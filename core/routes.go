@@ -105,7 +105,7 @@ func getAircraftsWithoutRouteData(pg *postgres, aircraftToProcess []Aircraft) []
 		FROM route_data
 		WHERE route_callsign = ANY($1::text[])
 		  AND last_updated IS NOT NULL
-		  AND last_updated > NOW() - INTERVAL '1 hour'`
+		  AND last_updated > NOW() - INTERVAL '2 hour'`
 
 	rows, err := pg.db.Query(context.Background(), query, callsignValues)
 
@@ -322,6 +322,10 @@ func insertRoutes(pg *postgres, routes []RouteInfo) {
 			log.Error().Err(err).Msg("insertRoutes() - Unable to insert data")
 		}
 	}
+
+}
+
+func updateAircraftsWithRouteData(pg *postgres, routes []RouteInfo) {
 
 }
 
