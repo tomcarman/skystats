@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { settings } from '../stores/settings';
+    import { speedUnit, altitudeUnit, SPEED_UNITS, ALTITUDE_UNITS } from '../stores/preferences';
     import { IconBrandGithub } from '@tabler/icons-svelte';
 
 
@@ -16,6 +17,7 @@
 
     const menuItems = [
         { id: 'display', label: 'Display' },
+        { id: 'preferences', label: 'Preferences' },
         { id: 'about', label: 'About' }
     ];
 
@@ -191,6 +193,50 @@
                             </div>
                         </form>
 
+                    {:else if activeMenuItem === 'preferences'}
+                        <h4 class="text-lg font-semibold mb-6">Preferences</h4>
+                        <div class="space-y-8">
+                            
+                            <!-- Speed Units -->
+                            <div>
+                                <p class="text-xl font-extralight tracking-wider mb-4">Speed Units</p>
+                                <div class="form-control flex flex-row gap-10">
+                                    {#each Object.values(SPEED_UNITS) as unit}
+                                        <label class="label cursor-pointer justify-start gap-4">
+                                            <input 
+                                                type="radio" 
+                                                name="speed-unit" 
+                                                class="radio radio-primary" 
+                                                value={unit.value}
+                                                bind:group={$speedUnit} 
+                                            />
+                                            <span class="label-text">{unit.label} ({unit.value})</span> 
+                                        </label>
+                                    {/each}
+                                </div>
+                            </div>
+
+                            <!-- Altitude Units -->
+                            <div>
+                                <p class="text-xl font-extralight tracking-wider mb-4">Altitude Units</p>
+                                <div class="form-control flex flex-row gap-10">
+                                    {#each Object.values(ALTITUDE_UNITS) as unit}
+                                        <label class="label cursor-pointer justify-start gap-4">
+                                            <input 
+                                                type="radio" 
+                                                name="altitude-unit" 
+                                                class="radio radio-primary" 
+                                                value={unit.value}
+                                                bind:group={$altitudeUnit}
+                                            />
+                                            <span class="label-text">{unit.label} ({unit.value})</span> 
+                                        </label>
+                                    {/each}
+                                </div>
+                            </div>
+
+                        </div>
+
                     {:else if activeMenuItem === 'about'}
                         <div class="text-center mx-auto">
                             <div class="flex items-center justify-center gap-6 mb-2">
@@ -217,7 +263,9 @@
                     {/if}
                 </div>
 
-                {#if activeMenuItem !== 'about'}
+
+
+                {#if activeMenuItem === 'display'}
                     <div class="modal-action justify-end">
                         <button
                             class="btn btn-primary"
