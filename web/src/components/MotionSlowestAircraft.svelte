@@ -1,15 +1,16 @@
 <script>
     import MotionStats from './MotionStats.svelte';
     import { IconWalk } from '@tabler/icons-svelte';
+    import { speedUnit, formatSpeed } from '../stores/preferences';
 
-    const columns = [
+    $: columns = [
         { header: 'Reg', field: 'registration', class: 'font-mono' },
         { header: 'Type', field: 'type' },
         // { header: 'Flight', field: 'flight' },
         { 
-            header: 'Speed', 
+            header: `Speed`, 
             field: 'ground_speed',
-            formatter: (value) => value ? `${value.toLocaleString()} kts` : '-'
+            formatter: (value) => formatSpeed(value, $speedUnit)
         },
         { 
             header: 'First Seen', 
