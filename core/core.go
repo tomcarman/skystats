@@ -101,9 +101,11 @@ func main() {
 		apiServer.Start()
 	}()
 
+	go apiServer.cachedStats.RefreshCachedTotals()
+
 	log.Info().Msg("Starting scheduled tasks")
 
-	updateAircraftDataTicker := time.NewTicker(2 * time.Second)
+	updateAircraftDataTicker := time.NewTicker(getIngestInterval())
 	updateStatisticsTicker := time.NewTicker(120 * time.Second)
 	updateRegistrationsTicker := time.NewTicker(30 * time.Second)
 	updateRoutesTicker := time.NewTicker(300 * time.Second)
@@ -137,6 +139,7 @@ func main() {
 		case <-updateStatisticsTicker.C:
 			log.Debug().Msg("Update Statistics")
 			updateMeasurementStatistics(pg)
+			apiServer.cachedStats.RefreshCachedTotals()
 		case <-updateRegistrationsTicker.C:
 			log.Debug().Msg("Update Aircraft Registration")
 			updateRegistrations(pg)

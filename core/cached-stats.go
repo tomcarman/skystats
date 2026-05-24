@@ -63,3 +63,50 @@ func (s *CachedStatsService) GetCachedTotalAircraft() (int, error) {
 
 	return totalAircraft, nil
 }
+
+func (s *CachedStatsService) GetCachedTotalFlights() (int, error) {
+	var value int
+	var lastUpdated time.Time
+	err := s.pg.db.QueryRow(context.Background(),
+		`SELECT stat_value, last_updated FROM cached_stats
+		WHERE stat_key = 'total_flights'`).Scan(&value, &lastUpdated)
+
+	if err == nil && time.Since(lastUpdated) < 24*time.Hour {
+		log.Debug().
+			Int("total_flights", value).
+			Dur("cache_age", time.Since(lastUpdated)).
+			Msg("Returning cached total_flights")
+		return value, nil
+	}
+
+	log.Info().Msg("Cache stale or missing, recalculating total_flights...")
+
+	var totalFlights int
+	err = s.pg.db.QueryRow(context.Background(),
+		"SELECT COUNT(*) FROM aircraft_data").Scan(&totalFlights)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to count total flights")
+		return 0, err
+	}
+
+	if err := s.updateCachedStat("total_flights", totalFlights); err != nil {
+		log.Error().Err(err).Msg("Failed to update cached total_flights")
+		return totalFlights, nil
+	}
+
+	log.Info().
+		Int("total_flights", totalFlights).
+		Msg("Successfully recalculated and cached total_flights")
+
+	return totalFlights, nil
+}
+
+// RefreshCachedTotals recomputes expensive all-time counts (used by the stats ticker).
+func (s *CachedStatsService) RefreshCachedTotals() {
+	if _, err := s.GetCachedTotalFlights(); err != nil {
+		log.Error().Err(err).Msg("Failed to refresh cached total_flights")
+	}
+	if _, err := s.GetCachedTotalAircraft(); err != nil {
+		log.Error().Err(err).Msg("Failed to refresh cached total_aircraft")
+	}
+}

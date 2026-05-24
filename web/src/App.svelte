@@ -95,12 +95,14 @@
     {/each}
   </div>
 
-  <!-- tab content -->
+  <!-- tab content: only mount the active tab to avoid loading all API endpoints at once -->
   <div style="min-height: 1000px;">
     {#each tabs as tab}
-      <div class="{activeTab === tab.name ? 'block fade-in' : 'hidden'}">
-        <svelte:component this={tab.component} />
-      </div>
+      {#if activeTab === tab.name}
+        <div class="fade-in">
+          <svelte:component this={tab.component} />
+        </div>
+      {/if}
     {/each}
   </div>
 

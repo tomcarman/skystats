@@ -3,10 +3,9 @@
     import NumberFlow from "@number-flow/svelte";
     import { IconPlane, IconPlaneDeparture, IconPlaneArrival } from "@tabler/icons-svelte";
     import Status from "./Status.svelte";
+    import { metricsPollMs } from "../stores/pollConfig";
 
     let endpoint = "api/stats/above";
-
-    let refreshRate = 2000;
     let data = [];
     let loading = true;
     let error = null;
@@ -31,15 +30,47 @@
         }
     }
 
-    onMount(() => {
-        fetchData();
-        interval = setInterval(fetchData, refreshRate);
-    });
-
-    onDestroy(() => {
+    function startPolling(ms) {
         if (interval) {
             clearInterval(interval);
         }
+        fetchData();
+        interval = setInterval(fetchData, ms);
+    }
+
+    function stopPolling() {
+        if (interval) {
+            clearInterval(interval);
+            interval = null;
+        }
+    }
+
+    function onVisibilityChange() {
+        if (document.hidden) {
+            stopPolling();
+        } else {
+            startPolling($metricsPollMs);
+        }
+    }
+
+    onMount(() => {
+        startPolling($metricsPollMs);
+        const unsubscribe = metricsPollMs.subscribe((ms) => {
+            if (!document.hidden) {
+                startPolling(ms);
+            }
+        });
+        document.addEventListener("visibilitychange", onVisibilityChange);
+
+        return () => {
+            unsubscribe();
+            document.removeEventListener("visibilitychange", onVisibilityChange);
+            stopPolling();
+        };
+    });
+
+    onDestroy(() => {
+        stopPolling();
     });
 
     function getSlottedAircraft(aircraftList) {

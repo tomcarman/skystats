@@ -133,6 +133,7 @@ func (s *APIServer) Start() {
 		}
 
 		api.GET("/version", s.getVersion)
+		api.GET("/config", s.getRuntimeConfig)
 	}
 
 	// Serve static files
@@ -1499,12 +1500,16 @@ func (s *APIServer) getRecentSeenMetrics(c *gin.Context) {
 	c.JSON(http.StatusOK, stats)
 }
 
+func (s *APIServer) getRuntimeConfig(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"metrics_poll_ms": getMetricsPollMs(),
+	})
+}
+
 func (s *APIServer) getTotalSeenMetrics(c *gin.Context) {
 	stats := gin.H{}
 
-	var totalFlights int
-	err := s.pg.db.QueryRow(context.Background(),
-		"SELECT COUNT(*) FROM aircraft_data").Scan(&totalFlights)
+	totalFlights, err := s.cachedStats.GetCachedTotalFlights()
 	if err == nil {
 		stats["total_flights"] = totalFlights
 	}
