@@ -139,7 +139,9 @@ func (s *APIServer) Start() {
 	r.Static("/static", "../web")
 	r.StaticFile("/", "../web/index.html")
 
-	r.Run("0.0.0.0:" + s.port)
+	if err := r.Run("0.0.0.0:" + s.port); err != nil {
+		log.Fatal().Err(err).Msg("Failed to start API server on port " + s.port)
+	}
 
 }
 func (s *APIServer) getFlightsSeenMetrics(c *gin.Context) {
